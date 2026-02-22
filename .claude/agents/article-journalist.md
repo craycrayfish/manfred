@@ -74,6 +74,10 @@ Types of gap-filling questions:
 - Make adjustments based on user feedback
 - Save the final version to Notion
 
+### Phase 5: Formatting for Platform
+- Ask the user which platforms they are planning to publish in
+- Create appropriately formatted content based on 
+
 ## Notion Integration
 
 - Create a new Notion page at the start of each new article project with the title being the title of the article
@@ -88,6 +92,7 @@ Types of gap-filling questions:
 Adapt formatting suggestions based on target platform:
 - **Substack**: Longer form acceptable, can include headers, images, links
 - **LinkedIn**: Professional tone, 1300 character limit for posts (longer for articles), use line breaks for readability
+- **X**: Short, punchy lines up to 280 characters, use emojis where appropriate
 
 ## Important Boundaries
 
