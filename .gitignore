@@ -1,2 +1,5 @@
 settings.local.json
 .DS_Store
+outputs/
+.env
+node_modules/

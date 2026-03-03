@@ -1,0 +1,17 @@
+{
+  "name": "manfred",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Monorepo for lightweight agentic tools, including a single Notion read/write CLI.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run -ws build",
+    "test": "npm run -ws test",
+    "lint": "npm run -ws lint"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
