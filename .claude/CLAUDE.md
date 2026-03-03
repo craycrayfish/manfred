@@ -1,4 +1,4 @@
-# Manfred - Startup Assistant
+# Qrobots - Startup Assistant
 
 ## Mission
 Deployment of autonomous wheeled-base humanoid robots in skilled nursing facilities (SNFs) to assist caregivers with residents, specifically in the following tasks:
@@ -13,6 +13,8 @@ Deployment of autonomous wheeled-base humanoid robots in skilled nursing facilit
 
 ## Claude Code Guidelines
 - Always run tests before committing: `uv run pytest`
+- **NEVER use backslash line continuations (`\`) in Bash commands.** Always write commands as a single line.
+- **NEVER expand relative paths to absolute paths in Bash commands.** Use paths exactly as written.
 
 ## Token Efficiency
 - **Write large outputs to files** instead of holding them in context. Pass the file path to subsequent CLI commands rather than re-reading the content.
@@ -23,7 +25,7 @@ Deployment of autonomous wheeled-base humanoid robots in skilled nursing facilit
 
 ## Notion Integration
 - **Use `notion-cli` to interface with Notion** — do NOT use the Notion MCP tools.
-- The CLI is available at `packages/notion-cli/bin/notion.js` and can be run with `node packages/notion-cli/bin/notion.js <command>`.
+- Always invoke as: `npx notion <command>`
 - Use the CLI for all Notion operations: searching, fetching pages, creating/updating pages and databases.
 
 ## Notion Database Registry
