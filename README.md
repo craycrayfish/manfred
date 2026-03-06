@@ -80,7 +80,13 @@ Supported Notion operations (used internally by skills):
 
 ## Setup
 
-**Requirements:** Node.js `>=20`, a [Notion integration token](https://www.notion.so/my-integrations)
+**Requirements:** [Claude Code](https://docs.anthropic.com/en/claude-code/getting-started), Node.js `>=20`
+
+**1. Install Claude Code**
+
+Follow the [official Claude Code installation guide](https://docs.anthropic.com/en/claude-code/getting-started).
+
+**2. Clone the repo**
 
 ```bash
 git clone https://github.com/craycrayfish/manfred.git
@@ -88,13 +94,21 @@ cd manfred
 npm install
 ```
 
-Set your Notion token in a `.env` file or environment variable:
+**3. Add your Notion token**
+
+Create a Notion integration and copy the token by following the [official Notion integration guide](https://developers.notion.com/docs/create-a-notion-integration). Then add it to a `.env` file in the repo root:
 
 ```
 NOTION_TOKEN=secret_...
 ```
 
-Then open the project in Claude Code. Skills become available immediately as slash commands.
+**4. Start Claude Code**
+
+```bash
+claude
+```
+
+Skills are available immediately as slash commands.
 
 ## Repository structure
 
