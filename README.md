@@ -110,6 +110,22 @@ claude
 
 Skills are available immediately as slash commands.
 
+## Creating skills and subagents
+
+Skills and subagents are plain markdown files that Claude Code reads as instructions. You create them by describing what you want to Claude — it will write the file for you.
+
+Examples:
+
+```
+Create a skill that takes a list of LinkedIn URLs and saves each person's profile to the People database in Notion.
+```
+
+```
+Create a subagent that generates a weekly summary email from our Notion task database.
+```
+
+Claude will place skills in `.claude/skills/<name>/SKILL.md` and subagents in `.claude/agents/<name>.md`, following the conventions already used in this repo. Once the file exists, the skill is immediately available as a slash command in Claude Code.
+
 ## Repository structure
 
 ```

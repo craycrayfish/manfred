@@ -34,6 +34,10 @@ Deployment of autonomous wheeled-base humanoid robots in skilled nursing facilit
 - If no match exists, follow the normal interactive flow.
 - After creating a new Notion database, add an entry to `.claude/memory/notion-databases.md` using the format documented in that file.
 
+## Batch Notion Writes
+- **Always confirm with the user before writing a batch of entities to Notion.** Show a preview of what will be written (entity names, count, target database) and wait for explicit approval before proceeding.
+- This applies to any operation that would create or update more than one Notion page at once.
+
 ## People Database (Auto-Lookup)
 - Whenever the user asks about a specific person (by name), **automatically search the People database** in Notion for an existing entry.
 - If the person is found, use their existing page as context and append any new research findings to their page.
