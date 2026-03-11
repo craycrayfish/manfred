@@ -1,6 +1,6 @@
 {
   "name": "manfred",
-  "owner": { "name": "Qrobots" },
+  "owner": { "name": "Shawn Tan" },
   "metadata": { "pluginRoot": "./plugins" },
   "plugins": [
     {
