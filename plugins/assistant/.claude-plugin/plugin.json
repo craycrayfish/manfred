@@ -1,0 +1,9 @@
+{
+  "name": "assistant",
+  "description": "Agentic workflow suite for Qrobots — research, outreach, and intelligence gathering powered by Claude Code and Notion",
+  "version": "0.1.0",
+  "author": {
+    "name": "Shawn Tan"
+  },
+  "homepage": "https://github.com/craycrayfish/manfred"
+}

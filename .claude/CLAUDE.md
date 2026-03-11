@@ -24,9 +24,8 @@ Deployment of autonomous wheeled-base humanoid robots in skilled nursing facilit
 - When running CLI tools that produce verbose output, redirect to a file and only read the parts needed: `command > /tmp/out.txt`.
 
 ## Notion Integration
-- **Use `notion-cli` to interface with Notion** — do NOT use the Notion MCP tools.
-- Always invoke as: `npx notion <command>`
-- Use the CLI for all Notion operations: searching, fetching pages, creating/updating pages and databases.
+- **Use the Notion MCP tools for all Notion operations** — searching, fetching pages, creating/updating pages and databases.
+- The available tools are prefixed `mcp__notion__` (e.g. `mcp__notion__notion-search`, `mcp__notion__notion-create-pages`).
 
 ## Notion Database Registry
 - Before any research task that saves to Notion, read `.claude/memory/notion-databases.md` to check for an existing database that matches the topic.

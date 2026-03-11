@@ -3,3 +3,4 @@ settings.local.json
 outputs/
 .env
 node_modules/
+tmp/

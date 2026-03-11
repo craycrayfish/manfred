@@ -86,3 +86,20 @@ This file lists known Notion databases so that skills (deep-research, entity-sea
   | Size (GB) | number | Model size in GB |
   | Source | url | Paper or announcement URL |
 - **Notes**: Always include Source URL. New select options for Maker/Model Type must be added manually in Notion UI before they can be set via API.
+
+---
+
+## Research Articles
+- **Database ID**: `31b44b67c7b980eea38cfe29736ad5d8`
+- **Data Source ID**: `31b44b67-c7b9-801e-8220-000b5a77f12b`
+- **URL**: https://www.notion.so/31b44b67c7b980eea38cfe29736ad5d8
+- **Purpose**: Catalog of research papers and news articles relevant to Manfred/Qrobots, linked to People (authors)
+- **Schema**:
+  | Property | Type | Description |
+  |----------|------|-------------|
+  | Title | title | Article/paper title |
+  | Authors | relation | Relation to People database (authors) |
+  | Source | url | URL to the article/paper |
+  | Type | select | Paper, News |
+  | Summary | rich_text | 2-3 sentence summary of key topic and conclusions |
+- **Notes**: Authors relation links to the People database. Type options: "Paper", "News".

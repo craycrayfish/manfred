@@ -1,0 +1,17 @@
+{
+  "name": "manfred",
+  "owner": { "name": "Qrobots" },
+  "metadata": { "pluginRoot": "./plugins" },
+  "plugins": [
+    {
+      "name": "assistant",
+      "source": "./plugins/assistant",
+      "description": "Agentic workflow suite for Qrobots — research, outreach, and intelligence gathering"
+    },
+    {
+      "name": "dev",
+      "source": "./plugins/dev",
+      "description": "Superpowered robotics development"
+    }
+  ]
+}

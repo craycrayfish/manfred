@@ -6,12 +6,15 @@
       "Bash(pytest:*)",
       "Bash(ruff:*)",
       "Bash(git:*)",
-      "Bash(npx notion*)",
       "Read(/tmp/*)",
       "Write(/tmp/*)",
       "Bash(cat /tmp/*)",
       "Bash(cp /tmp/*)"
     ],
     "deny": []
+  },
+  "enabledPlugins": {
+    "Notion@claude-plugins-official": true,
+    "hookify@claude-plugins-official": false
   }
 }
