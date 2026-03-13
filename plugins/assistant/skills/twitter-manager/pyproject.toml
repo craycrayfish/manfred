@@ -1,0 +1,10 @@
+[project]
+name = "twitter-manager"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "tweepy>=4.14", "openai>=1.0", "python-dotenv"]
+
+[tool.pytest.ini_options]
+testpaths = ["scripts/tests"]
