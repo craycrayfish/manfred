@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.12"
 # dependencies = [
-#   "openai>=1.0",
+#   "requests>=2.31",
 #   "python-dotenv",
 # ]
 # ///
@@ -10,17 +10,13 @@ import json
 import os
 import sys
 
-from dotenv import load_dotenv
-from openai import OpenAI
+import requests
+from dotenv import find_dotenv, load_dotenv
 
-load_dotenv()
+RESPONSES_URL = "https://api.x.ai/v1/responses"
+MODEL = "grok-4-1-fast"
 
-SYSTEM_PROMPT = (
-    "You are a social media analyst specializing in robotics and automation. "
-    "You have real-time access to X/Twitter and can identify what is trending right now."
-)
-
-USER_PROMPT = """Search X/Twitter right now and identify the top 10 trending topics in robotics, automation, and humanoid robots.
+USER_PROMPT = """Search X right now and identify the top 10 trending topics in robotics, automation, and humanoid robots.
 
 For each topic, provide:
 - The topic name or hashtag
@@ -44,6 +40,8 @@ Do not include any text outside the JSON object."""
 
 
 def main() -> None:
+    load_dotenv(find_dotenv())
+
     api_key = os.environ.get("XAI_API_KEY")
     if not api_key:
         print(
@@ -52,27 +50,54 @@ def main() -> None:
         )
         sys.exit(1)
 
-    client = OpenAI(
-        api_key=api_key,
-        base_url="https://api.x.ai/v1",
+    payload = {
+        "model": MODEL,
+        "input": [{"role": "user", "content": USER_PROMPT}],
+        "tools": [{"type": "x_search"}],
+    }
+
+    resp = requests.post(
+        RESPONSES_URL,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=60,
     )
 
-    response = client.chat.completions.create(
-        model="grok-2-latest",
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": USER_PROMPT},
-        ],
-        temperature=0,
-    )
+    if not resp.ok:
+        print(
+            json.dumps({"error": f"API error {resp.status_code}", "detail": resp.text}),
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
-    raw = response.choices[0].message.content.strip()
+    # Extract text content from the Responses API output array
+    raw = ""
+    for block in resp.json().get("output", []):
+        if block.get("type") == "message":
+            for part in block.get("content", []):
+                if part.get("type") == "output_text":
+                    raw = part.get("text", "").strip()
+                    break
+
+    if not raw:
+        print(
+            json.dumps({"error": "No text content in response", "raw": resp.json()}),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # Strip markdown code fences if present
+    if raw.startswith("```"):
+        raw = raw.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
 
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
         print(
-            json.dumps({"error": "Failed to parse Grok response as JSON", "detail": str(exc), "raw": raw}),
+            json.dumps({"error": "Failed to parse response as JSON", "detail": str(exc), "raw": raw}),
             file=sys.stderr,
         )
         sys.exit(1)

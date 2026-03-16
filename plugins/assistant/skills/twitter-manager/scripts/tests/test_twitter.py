@@ -1,40 +1,23 @@
 """Tests for twitter.py"""
 import argparse
 import json
-import sys
-import types
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-# ---------------------------------------------------------------------------
-# Helpers to import the script without triggering load_dotenv side-effects
-# ---------------------------------------------------------------------------
-SCRIPTS_DIR = str(
-    __import__("pathlib").Path(__file__).parent.parent.resolve()
-)
-
-
-def _import_twitter():
-    """Import twitter module with sys.path set correctly."""
-    if SCRIPTS_DIR not in sys.path:
-        sys.path.insert(0, SCRIPTS_DIR)
-    import importlib
-    import twitter  # noqa: PLC0415
-
-    return importlib.reload(twitter)
-
+import twitter
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
 ALL_VARS = {
-    "TWITTER_BEARER_TOKEN": "bearer",
-    "TWITTER_USER_ID": "uid123",
-    "TWITTER_API_KEY": "apikey",
-    "TWITTER_API_SECRET": "apisecret",
-    "TWITTER_ACCESS_TOKEN": "accesstoken",
-    "TWITTER_ACCESS_TOKEN_SECRET": "accesssecret",
+    "X_BEARER_TOKEN": "bearer",
+}
+
+ALL_POST_VARS = {
+    "X_API_KEY": "api_key",
+    "X_API_SECRET": "api_secret",
+    "X_ACCESS_TOKEN": "access_token",
+    "X_ACCESS_TOKEN_SECRET": "access_token_secret",
 }
 
 
@@ -46,86 +29,59 @@ class TestCheckCredentials:
         for k, v in ALL_VARS.items():
             monkeypatch.setenv(k, v)
 
-        twitter = _import_twitter()
-        result = twitter.check_credentials()
+        result = twitter.check_credentials(twitter.SEARCH_VARS)
 
         assert result == ALL_VARS
 
-    def test_missing_one(self, monkeypatch, capsys):
-        for k, v in ALL_VARS.items():
-            monkeypatch.setenv(k, v)
-        monkeypatch.delenv("TWITTER_API_KEY")
+    def test_missing_bearer_token(self, monkeypatch, capsys):
+        monkeypatch.delenv("X_BEARER_TOKEN", raising=False)
 
-        twitter = _import_twitter()
         with pytest.raises(SystemExit) as exc_info:
-            twitter.check_credentials()
+            twitter.check_credentials(twitter.SEARCH_VARS)
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
         err = json.loads(captured.err)
-        assert "TWITTER_API_KEY" in err["missing"]
-
-    def test_missing_all(self, monkeypatch, capsys):
-        for k in ALL_VARS:
-            monkeypatch.delenv(k, raising=False)
-
-        twitter = _import_twitter()
-        with pytest.raises(SystemExit) as exc_info:
-            twitter.check_credentials()
-
-        assert exc_info.value.code == 1
-        captured = capsys.readouterr()
-        err = json.loads(captured.err)
-        assert len(err["missing"]) == 6
-        for var in ALL_VARS:
-            assert var in err["missing"]
+        assert "X_BEARER_TOKEN" in err["missing"]
 
 
 # ---------------------------------------------------------------------------
-# cmd_mentions
+# cmd_search
 # ---------------------------------------------------------------------------
-class TestCmdMentions:
-    def _make_args(self, max_results=10):
-        args = argparse.Namespace(max_results=max_results)
-        return args
-
+class TestCmdSearch:
     def _set_all_env(self, monkeypatch):
         for k, v in ALL_VARS.items():
             monkeypatch.setenv(k, v)
 
     def test_empty_response(self, monkeypatch, capsys):
         self._set_all_env(monkeypatch)
-        twitter = _import_twitter()
 
         mock_response = MagicMock()
         mock_response.data = None
         mock_response.includes = None
 
         mock_client = MagicMock()
-        mock_client.get_users_mentions.return_value = mock_response
+        mock_client.search_recent_tweets.return_value = mock_response
 
+        args = argparse.Namespace(query="SNF robots", max_results=10)
         with patch.object(twitter, "get_client", return_value=mock_client):
-            twitter.cmd_mentions(self._make_args())
+            twitter.cmd_search(args)
 
         captured = capsys.readouterr()
         output = json.loads(captured.out)
-        assert output == {"mentions": []}
+        assert output == {"tweets": []}
 
     def test_with_data(self, monkeypatch, capsys):
         self._set_all_env(monkeypatch)
-        twitter = _import_twitter()
 
-        # Build a fake tweet object
         mock_tweet = MagicMock()
         mock_tweet.id = "tweet001"
-        mock_tweet.text = "Hello @bot"
+        mock_tweet.text = "Robots in nursing homes"
         mock_tweet.author_id = "author42"
         mock_tweet.created_at = None
-        mock_tweet.conversation_id = "conv001"
-        mock_tweet.in_reply_to_user_id = None
-        mock_tweet.referenced_tweets = None
+        mock_tweet.public_metrics = {"like_count": 5, "retweet_count": 1}
+        mock_tweet.entities = {"urls": [{"expanded_url": "https://example.com"}]}
 
-        # Build a fake user expansion
         mock_user = MagicMock()
         mock_user.id = "author42"
         mock_user.username = "alice"
@@ -136,44 +92,138 @@ class TestCmdMentions:
         mock_response.includes = {"users": [mock_user]}
 
         mock_client = MagicMock()
-        mock_client.get_users_mentions.return_value = mock_response
+        mock_client.search_recent_tweets.return_value = mock_response
 
+        args = argparse.Namespace(query="nursing home robots", max_results=10)
         with patch.object(twitter, "get_client", return_value=mock_client):
-            twitter.cmd_mentions(self._make_args())
+            twitter.cmd_search(args)
 
         captured = capsys.readouterr()
         output = json.loads(captured.out)
-        assert len(output["mentions"]) == 1
-        mention = output["mentions"][0]
-        assert mention["id"] == "tweet001"
-        assert mention["text"] == "Hello @bot"
-        assert mention["author_username"] == "alice"
+        assert len(output["tweets"]) == 1
+        tweet = output["tweets"][0]
+        assert tweet["id"] == "tweet001"
+        assert tweet["text"] == "Robots in nursing homes"
+        assert tweet["author_username"] == "alice"
+        assert tweet["urls"] == ["https://example.com"]
+
+    def test_api_error_exits(self, monkeypatch, capsys):
+        self._set_all_env(monkeypatch)
+
+        import tweepy
+
+        mock_client = MagicMock()
+        mock_client.search_recent_tweets.side_effect = tweepy.TweepyException("rate limit")
+
+        args = argparse.Namespace(query="robots", max_results=10)
+        with patch.object(twitter, "get_client", return_value=mock_client):
+            with pytest.raises(SystemExit) as exc_info:
+                twitter.cmd_search(args)
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        err = json.loads(captured.err)
+        assert "rate limit" in err["error"]
 
 
 # ---------------------------------------------------------------------------
-# cmd_reply
+# cmd_post
 # ---------------------------------------------------------------------------
-class TestCmdReply:
-    def _set_all_env(self, monkeypatch):
-        for k, v in ALL_VARS.items():
+class TestCmdPost:
+    def _set_post_env(self, monkeypatch):
+        for k, v in ALL_POST_VARS.items():
             monkeypatch.setenv(k, v)
 
-    def test_reply_success(self, monkeypatch, capsys):
-        self._set_all_env(monkeypatch)
-        twitter = _import_twitter()
+    def test_post_success(self, monkeypatch, capsys):
+        self._set_post_env(monkeypatch)
 
         mock_response = MagicMock()
-        mock_response.data = {"id": "123", "text": "hello"}
+        mock_response.data = {"id": "12345"}
 
         mock_client = MagicMock()
         mock_client.create_tweet.return_value = mock_response
 
-        args = argparse.Namespace(tweet_id="orig_tweet", text="hello")
-
-        with patch.object(twitter, "get_client", return_value=mock_client):
-            twitter.cmd_reply(args)
+        args = argparse.Namespace(text="Hello from Qrobots!")
+        with patch.object(twitter, "get_post_client", return_value=mock_client):
+            twitter.cmd_post(args)
 
         captured = capsys.readouterr()
         output = json.loads(captured.out)
-        assert output["id"] == "123"
-        assert output["text"] == "hello"
+        assert output == {"id": "12345", "text": "Hello from Qrobots!"}
+        mock_client.create_tweet.assert_called_once_with(text="Hello from Qrobots!")
+
+    def test_post_empty_text(self, monkeypatch, capsys):
+        self._set_post_env(monkeypatch)
+
+        args = argparse.Namespace(text="   ")
+        with pytest.raises(SystemExit) as exc_info:
+            twitter.cmd_post(args)
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        err = json.loads(captured.err)
+        assert err["error"] == "Tweet text cannot be empty"
+
+    def test_post_exceeds_280_chars(self, monkeypatch, capsys):
+        self._set_post_env(monkeypatch)
+
+        args = argparse.Namespace(text="x" * 281)
+        with pytest.raises(SystemExit) as exc_info:
+            twitter.cmd_post(args)
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        err = json.loads(captured.err)
+        assert "280 characters" in err["error"]
+        assert err["length"] == 281
+
+    def test_post_missing_credentials(self, monkeypatch, capsys):
+        for k in ALL_POST_VARS:
+            monkeypatch.delenv(k, raising=False)
+
+        args = argparse.Namespace(text="test tweet")
+        with pytest.raises(SystemExit) as exc_info:
+            twitter.cmd_post(args)
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        err = json.loads(captured.err)
+        for k in ALL_POST_VARS:
+            assert k in err["missing"]
+
+    def test_post_api_error_exits(self, monkeypatch, capsys):
+        self._set_post_env(monkeypatch)
+
+        import tweepy
+
+        mock_client = MagicMock()
+        mock_client.create_tweet.side_effect = tweepy.TweepyException("forbidden")
+
+        args = argparse.Namespace(text="Hello!")
+        with patch.object(twitter, "get_post_client", return_value=mock_client):
+            with pytest.raises(SystemExit) as exc_info:
+                twitter.cmd_post(args)
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        err = json.loads(captured.err)
+        assert "forbidden" in err["error"]
+
+    def test_post_none_response_exits(self, monkeypatch, capsys):
+        self._set_post_env(monkeypatch)
+
+        mock_response = MagicMock()
+        mock_response.data = None
+
+        mock_client = MagicMock()
+        mock_client.create_tweet.return_value = mock_response
+
+        args = argparse.Namespace(text="Hello!")
+        with patch.object(twitter, "get_post_client", return_value=mock_client):
+            with pytest.raises(SystemExit) as exc_info:
+                twitter.cmd_post(args)
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        err = json.loads(captured.err)
+        assert "No data returned" in err["error"]

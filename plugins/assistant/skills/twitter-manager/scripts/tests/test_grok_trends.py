@@ -1,59 +1,40 @@
 """Tests for grok_trends.py"""
 import json
-import sys
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
+import grok_trends
 
-SCRIPTS_DIR = str(
-    __import__("pathlib").Path(__file__).parent.parent.resolve()
-)
-
-
-def _import_grok_trends():
-    """Import grok_trends module with sys.path set correctly."""
-    if SCRIPTS_DIR not in sys.path:
-        sys.path.insert(0, SCRIPTS_DIR)
-    import importlib
-    import grok_trends  # noqa: PLC0415
-
-    return importlib.reload(grok_trends)
+VALID_PAYLOAD = {
+    "trending_topics": [
+        {
+            "topic": "#HumanoidRobots",
+            "summary": "Discussion about humanoid robot deployments",
+            "example_tweets": ["Tweet one", "Tweet two"],
+            "engagement_level": "high",
+        }
+    ]
+}
 
 
-VALID_RESPONSE_JSON = json.dumps(
-    {
-        "trending_topics": [
+def _make_responses_api_response(text: str) -> dict:
+    """Build a fake xAI Responses API response dict."""
+    return {
+        "output": [
             {
-                "topic": "#HumanoidRobots",
-                "summary": "Discussion about humanoid robot deployments",
-                "example_tweets": ["Tweet one", "Tweet two"],
-                "engagement_level": "high",
+                "type": "message",
+                "content": [{"type": "output_text", "text": text}],
             }
         ]
     }
-)
-
-
-def _make_openai_response(content: str):
-    """Build a fake openai ChatCompletion response object."""
-    message = MagicMock()
-    message.content = content
-
-    choice = MagicMock()
-    choice.message = message
-
-    response = MagicMock()
-    response.choices = [choice]
-    return response
 
 
 class TestGrokTrends:
     def test_missing_api_key(self, monkeypatch, capsys):
         monkeypatch.delenv("XAI_API_KEY", raising=False)
-        grok = _import_grok_trends()
 
-        with pytest.raises(SystemExit) as exc_info:
-            grok.main()
+        with patch("grok_trends.load_dotenv"), pytest.raises(SystemExit) as exc_info:
+            grok_trends.main()
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
@@ -63,38 +44,69 @@ class TestGrokTrends:
 
     def test_valid_response(self, monkeypatch, capsys):
         monkeypatch.setenv("XAI_API_KEY", "fake-key")
-        grok = _import_grok_trends()
 
-        mock_openai_instance = MagicMock()
-        mock_openai_instance.chat.completions.create.return_value = (
-            _make_openai_response(VALID_RESPONSE_JSON)
-        )
+        mock_resp = type("R", (), {
+            "ok": True,
+            "json": lambda self: _make_responses_api_response(json.dumps(VALID_PAYLOAD)),
+        })()
 
-        with patch("grok_trends.OpenAI", return_value=mock_openai_instance):
-            grok.main()
+        with patch("grok_trends.requests.post", return_value=mock_resp):
+            grok_trends.main()
 
         captured = capsys.readouterr()
         output = json.loads(captured.out)
         assert "trending_topics" in output
-        assert isinstance(output["trending_topics"], list)
         assert len(output["trending_topics"]) == 1
         assert output["trending_topics"][0]["topic"] == "#HumanoidRobots"
 
     def test_invalid_json_response(self, monkeypatch, capsys):
         monkeypatch.setenv("XAI_API_KEY", "fake-key")
-        grok = _import_grok_trends()
 
-        mock_openai_instance = MagicMock()
-        mock_openai_instance.chat.completions.create.return_value = (
-            _make_openai_response("this is not json at all")
-        )
+        mock_resp = type("R", (), {
+            "ok": True,
+            "json": lambda self: _make_responses_api_response("this is not json at all"),
+        })()
 
-        with patch("grok_trends.OpenAI", return_value=mock_openai_instance):
+        with patch("grok_trends.requests.post", return_value=mock_resp):
             with pytest.raises(SystemExit) as exc_info:
-                grok.main()
+                grok_trends.main()
 
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
         err = json.loads(captured.err)
         assert "error" in err
         assert "parse" in err["error"].lower()
+
+    def test_api_error_response(self, monkeypatch, capsys):
+        monkeypatch.setenv("XAI_API_KEY", "fake-key")
+
+        mock_resp = type("R", (), {
+            "ok": False,
+            "status_code": 403,
+            "text": "Forbidden",
+        })()
+
+        with patch("grok_trends.requests.post", return_value=mock_resp):
+            with pytest.raises(SystemExit) as exc_info:
+                grok_trends.main()
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        err = json.loads(captured.err)
+        assert "403" in err["error"]
+
+    def test_markdown_fenced_json(self, monkeypatch, capsys):
+        monkeypatch.setenv("XAI_API_KEY", "fake-key")
+
+        fenced = f"```json\n{json.dumps(VALID_PAYLOAD)}\n```"
+        mock_resp = type("R", (), {
+            "ok": True,
+            "json": lambda self: _make_responses_api_response(fenced),
+        })()
+
+        with patch("grok_trends.requests.post", return_value=mock_resp):
+            grok_trends.main()
+
+        captured = capsys.readouterr()
+        output = json.loads(captured.out)
+        assert "trending_topics" in output
