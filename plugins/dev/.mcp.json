@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "codex-tdd": {
+      "command": "codex",
+      "args": [
+        "mcp-server",
+        "-c",
+        "skills.config=[{enabled=true, path=\"${CLAUDE_PLUGIN_ROOT}/skills/tdd-dev\"}]"
+      ],
+      "description": "Codex MCP server with TDD skill enabled"
+    }
+  }
+}
