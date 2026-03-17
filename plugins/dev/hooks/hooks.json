@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/auto-tmux-dev.js\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/auto-tmux-dev.js\""
           }
         ],
         "description": "Auto-start dev servers in tmux with directory-based session names"
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:bash:tmux-reminder\" \"scripts/hooks/pre-bash-tmux-reminder.js\" \"strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:bash:tmux-reminder\" \"scripts/hooks/pre-bash-tmux-reminder.js\" \"strict\""
           }
         ],
         "description": "Reminder to use tmux for long-running commands"
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:bash:git-push-reminder\" \"scripts/hooks/pre-bash-git-push-reminder.js\" \"strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:bash:git-push-reminder\" \"scripts/hooks/pre-bash-git-push-reminder.js\" \"strict\""
           }
         ],
         "description": "Reminder before git push to review changes"
@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:write:doc-file-warning\" \"scripts/hooks/doc-file-warning.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:write:doc-file-warning\" \"scripts/hooks/doc-file-warning.js\" \"standard,strict\""
           }
         ],
         "description": "Doc file warning: warn about non-standard documentation files (exit code 0; warns only)"
@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:edit-write:suggest-compact\" \"scripts/hooks/suggest-compact.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:edit-write:suggest-compact\" \"scripts/hooks/suggest-compact.js\" \"standard,strict\""
           }
         ],
         "description": "Suggest manual compaction at logical intervals"
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:compact\" \"scripts/hooks/pre-compact.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"pre:compact\" \"scripts/hooks/pre-compact.js\" \"standard,strict\""
           }
         ],
         "description": "Save state before context compaction"
@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:bash:pr-created\" \"scripts/hooks/post-bash-pr-created.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:bash:pr-created\" \"scripts/hooks/post-bash-pr-created.js\" \"standard,strict\""
           }
         ],
         "description": "Log PR URL and provide review command after PR creation"
@@ -105,7 +105,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:bash:build-complete\" \"scripts/hooks/post-bash-build-complete.js\" \"standard,strict\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:bash:build-complete\" \"scripts/hooks/post-bash-build-complete.js\" \"standard,strict\"",
             "async": true,
             "timeout": 30
           }
@@ -117,7 +117,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:quality-gate\" \"scripts/hooks/quality-gate.js\" \"standard,strict\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:quality-gate\" \"scripts/hooks/quality-gate.js\" \"standard,strict\"",
             "async": true,
             "timeout": 30
           }
@@ -129,7 +129,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:edit:format\" \"scripts/hooks/post-edit-format.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:edit:format\" \"scripts/hooks/post-edit-format.js\" \"standard,strict\""
           }
         ],
         "description": "Auto-format JS/TS files after edits (auto-detects Biome or Prettier)"
@@ -139,7 +139,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:edit:typecheck\" \"scripts/hooks/post-edit-typecheck.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:edit:typecheck\" \"scripts/hooks/post-edit-typecheck.js\" \"standard,strict\""
           }
         ],
         "description": "TypeScript check after editing .ts/.tsx files"
@@ -149,7 +149,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:edit:console-warn\" \"scripts/hooks/post-edit-console-warn.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"post:edit:console-warn\" \"scripts/hooks/post-edit-console-warn.js\" \"standard,strict\""
           }
         ],
         "description": "Warn about console.log statements after edits"
@@ -173,7 +173,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:check-console-log\" \"scripts/hooks/check-console-log.js\" \"standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:check-console-log\" \"scripts/hooks/check-console-log.js\" \"standard,strict\""
           }
         ],
         "description": "Check for console.log in modified files after each response"
@@ -183,7 +183,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:session-end\" \"scripts/hooks/session-end.js\" \"minimal,standard,strict\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:session-end\" \"scripts/hooks/session-end.js\" \"minimal,standard,strict\"",
             "async": true,
             "timeout": 10
           }
@@ -195,7 +195,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:evaluate-session\" \"scripts/hooks/evaluate-session.js\" \"minimal,standard,strict\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:evaluate-session\" \"scripts/hooks/evaluate-session.js\" \"minimal,standard,strict\"",
             "async": true,
             "timeout": 10
           }
@@ -207,7 +207,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:cost-tracker\" \"scripts/hooks/cost-tracker.js\" \"minimal,standard,strict\"",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"stop:cost-tracker\" \"scripts/hooks/cost-tracker.js\" \"minimal,standard,strict\"",
             "async": true,
             "timeout": 10
           }
@@ -221,7 +221,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"session:end:marker\" \"scripts/hooks/session-end-marker.js\" \"minimal,standard,strict\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run-node.sh\" \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/run-with-flags.js\" \"session:end:marker\" \"scripts/hooks/session-end-marker.js\" \"minimal,standard,strict\""
           }
         ],
         "description": "Session end lifecycle marker (non-blocking)"
