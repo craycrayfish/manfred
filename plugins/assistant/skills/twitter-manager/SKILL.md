@@ -59,20 +59,42 @@ Read `/tmp/grok-trends.json`. If the file contains an error object, report it to
 
 ### Step 3 — Generate drafts
 
-For the top 3–5 trending topics most relevant to robotics and skilled nursing facilities, generate 1–2 candidate tweet drafts per topic. Follow the Voice Guidelines below.
+For the top 3–5 trending topics most relevant to robotics, generate **3 candidate tweet drafts per topic**, numbered `Na`, `Nb`, `Nc`:
+
+- **a** — Thoughtful/direct take (the default voice)
+- **b** — Quote-tweet of a source tweet from `source_tweets[]`, adding a sharp one-line reaction. Format: the source tweet URL on its own line after the text, e.g. `Great news.\n\nhttps://x.com/...`
+- **c** — Dry humor take on the same topic
+
+Follow the Voice Guidelines below.
 
 ### Step 4 — Review loop
 
-For each draft, use AskUserQuestion to present it to the user:
+For each topic, present all 3 options together using AskUserQuestion:
 
-> Draft [N of M] — Topic: [topic name]
-> "[draft text]"
+> **Topic [N]: [topic name]**
 >
-> What would you like to do?
-> (p) Post this tweet
-> (e) Edit — tell me what to change
-> (s) Skip
-> (q) Stop reviewing
+> **[Na]** "[draft text]"
+>
+> **[Nb]** "[quote-tweet text]"
+> ↩ quoting: [author] — "[source tweet excerpt]"
+>
+> **[Nc]** "[dry humor draft]"
+>
+> Pick an option (1a / 1b / 1c), (e) edit one, (s) skip topic, or (q) quit.
+
+Handle each response:
+
+- **Na/Nb/Nc — Post**: Confirm the exact text, then run:
+  ```
+  uv run plugins/assistant/skills/twitter-manager/scripts/twitter.py post --text "<confirmed_text>"
+  ```
+  Read the JSON output. If successful, show the posted tweet ID and continue to the next topic. If the command fails, show the error and ask the user if they want to retry or skip.
+
+- **e — Edit**: Ask which option and what to change, revise, re-present. **ALWAYS show final text and get explicit confirmation before posting.**
+
+- **s — Skip**: Move to the next topic.
+
+- **q — Stop reviewing**: Exit the loop.
 
 Handle each response:
 
@@ -203,6 +225,7 @@ Apply these guidelines to all tweet drafts and tweet ideas:
 - **Perspective**: someone deep in robotics — following the field closely, with real deployment experience
 - **Focus**: robotics broadly (hardware, AI, deployment challenges, industry trends); bring in healthcare labor and care settings occasionally, not in every tweet
 - **Avoid**: making every tweet about SNFs or nursing homes — that angle should surface naturally a few times, not dominate
+- **Dry humor (option c)**: wry, understated, deadpan — the kind of thing a founder says at a conference that gets a laugh from the people who get it. Not sarcastic or mean. Think: observing an absurdity plainly, without editorializing.
 - **Hashtags**: at most 1-2 relevant hashtags per tweet — no hashtag spam
 - **Length**: keep tweets punchy and well under 280 characters to leave room for replies and quote-tweets
 - **Never** post or finalize any tweet without explicit user confirmation

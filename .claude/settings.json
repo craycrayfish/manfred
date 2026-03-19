@@ -16,6 +16,7 @@
   "enabledPlugins": {
     "Notion@claude-plugins-official": true,
     "hookify@claude-plugins-official": false,
-    "dev@manfred": true
+    "dev@manfred": true,
+    "assistant@manfred": true
   }
 }
