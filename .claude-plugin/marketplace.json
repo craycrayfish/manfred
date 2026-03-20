@@ -12,6 +12,11 @@
       "name": "dev",
       "source": "./plugins/dev",
       "description": "Superpowered robotics development"
+    },
+    {
+      "name": "whatsapp",
+      "source": "./plugins/whatsapp",
+      "description": "WhatsApp channel for Claude Code — two-way messaging bridge"
     }
   ]
 }
