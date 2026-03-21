@@ -11,6 +11,22 @@ Deployment of autonomous wheeled-base humanoid robots in skilled nursing facilit
 ## Development Environment
 - Use python 3.12+ with uv for version and package management
 
+## Hyptree Dashboard
+The hypothesis tree dashboard is a Next.js app in `packages/hyptree/` that runs on port 3333.
+
+To start it:
+```bash
+cd packages/hyptree
+npm install          # first time only
+npm run dev          # http://localhost:3333
+```
+
+Requires a `.env.local` file (copy from `.env.local.example`) with:
+- `NOTION_API_KEY` — from https://www.notion.so/my-integrations
+- `NOTION_*_DB_ID` variables — database IDs from `.claude/memory/notion-databases.md` (created by `/seed-tree`)
+
+The dashboard reads directly from Notion at runtime; no separate backend is needed.
+
 ## Claude Code Guidelines
 - Always run tests before committing: `uv run pytest`
 - **NEVER use backslash line continuations (`\`) in Bash commands.** Always write commands as a single line.

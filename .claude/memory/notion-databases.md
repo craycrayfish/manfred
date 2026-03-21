@@ -103,3 +103,124 @@ This file lists known Notion databases so that skills (deep-research, entity-sea
   | Type | select | Paper, News |
   | Summary | rich_text | 2-3 sentence summary of key topic and conclusions |
 - **Notes**: Authors relation links to the People database. Type options: "Paper", "News".
+
+---
+
+## Hypothesis Tree — Assessment fields (shared across all 5 tables)
+All five hypothesis tree tables share these assessment columns:
+| Property | Type | Options | Description |
+|----------|------|---------|-------------|
+| Market Need | select | 1, 2, 3, 4, 5 | Strength of market need rating |
+| Willingness to Pay | select | 1, 2, 3, 4, 5 | Customer WTP rating |
+| Technical Feasibility | select | 1, 2, 3, 4, 5 | Technical difficulty rating |
+| Regulatory Feasibility | select | 1, 2, 3, 4, 5 | Regulatory risk rating |
+| Ease of Entry | select | 1, 2, 3, 4, 5 | Ease of market entry rating |
+| Current Deployments | rich_text | — | Notes on existing market solutions |
+| Alternative Solutions | rich_text | — | Notes on alternative approaches |
+
+---
+
+## Hypothesis Tree — Verticals
+- **Database ID**: `c77239d3557e414f82faa23149f461e5`
+- **Data Source ID**: `818fb1d6-7477-4e0d-ad94-5ba7fb4e6177`
+- **URL**: https://www.notion.so/c77239d3557e414f82faa23149f461e5
+- **Parent Page**: Hypothesis Tree
+- **Purpose**: Top-level startup verticals being explored (e.g., "Skilled Nursing Facilities")
+- **Schema**:
+  | Property | Type | Options |
+  |----------|------|---------|
+  | Name | title | — |
+  | Description | rich_text | — |
+  | Status | select | Active, Parked, Killed |
+  | Priority | number | — |
+  | Owner | select | Shawn, Co-founder, Agent |
+  | + all shared assessment fields | | |
+- **Notes**: Root of the hypothesis tree. Created by /seed-tree skill.
+
+---
+
+## Hypothesis Tree — Markets
+- **Database ID**: `cdc8f63549ee47f6bbcb8fa4be0daa3b`
+- **Data Source ID**: `2d632b83-abc8-4ffb-aab6-77337c7c6e15`
+- **URL**: https://www.notion.so/cdc8f63549ee47f6bbcb8fa4be0daa3b
+- **Parent Page**: Hypothesis Tree
+- **Purpose**: Market segments within each vertical (e.g., "Call Light Response in SNFs")
+- **Schema**:
+  | Property | Type | Options |
+  |----------|------|---------|
+  | Name | title | — |
+  | Description | rich_text | — |
+  | Status | select | Exploring, Validated, Invalidated, Parked |
+  | TAM | number | $M |
+  | Priority | number | — |
+  | Vertical | relation | → Verticals |
+  | + all shared assessment fields | | |
+- **Notes**: Second level of the hypothesis tree. MECE within each vertical.
+
+---
+
+## Hypothesis Tree — Use Cases
+- **Database ID**: `5406b28931eb44748944aea1daa840a9`
+- **Data Source ID**: `209d7467-f826-4541-a0b5-be21e40b3b14`
+- **URL**: https://www.notion.so/5406b28931eb44748944aea1daa840a9
+- **Parent Page**: Hypothesis Tree
+- **Purpose**: Specific job-to-be-done scenarios within each market (e.g., "Resident requests nighttime assistance")
+- **Schema**:
+  | Property | Type | Options |
+  |----------|------|---------|
+  | Name | title | — |
+  | Description | rich_text | — |
+  | Status | select | Exploring, Validated, Invalidated, Parked |
+  | Priority | number | — |
+  | Owner | select | Shawn, Co-founder, Agent |
+  | Market | relation | → Markets |
+  | + all shared assessment fields | | |
+- **Notes**: Third level of the tree. MECE within each market.
+
+---
+
+## Hypothesis Tree — Workflows
+- **Database ID**: `206adcaa981b47089bd08e912eb97b6c`
+- **Data Source ID**: `ce94f261-f97e-48a2-ab40-4b8b78b171c3`
+- **URL**: https://www.notion.so/206adcaa981b47089bd08e912eb97b6c
+- **Parent Page**: Hypothesis Tree
+- **Purpose**: Concrete process flows being tested within each use case (desirability, feasibility, viability)
+- **Schema**:
+  | Property | Type | Options |
+  |----------|------|---------|
+  | Name | title | — |
+  | Description | rich_text | — |
+  | Type | select | Desirability, Feasibility, Viability |
+  | Confidence | select | Untested, Low, Medium, High, Validated, Invalidated |
+  | Score | number | 0–100 composite evidence score |
+  | Status | select | Open, Testing, Validated, Invalidated |
+  | Owner | select | Shawn, Co-founder, Agent |
+  | Use Case | relation | → Use Cases |
+  | + all shared assessment fields | | |
+- **Notes**: Fourth/leaf level of the tree. Use /research-hypothesis to find evidence and /score-hypothesis to recalculate scores.
+
+---
+
+## Hypothesis Tree — Evidence
+- **Database ID**: `559d7d415de54fd2848584b7f562f0cf`
+- **Data Source ID**: `22aca84e-0c9b-4598-9dbd-c9e5ad4cb16c`
+- **URL**: https://www.notion.so/559d7d415de54fd2848584b7f562f0cf
+- **Parent Page**: Hypothesis Tree
+- **Purpose**: Individual pieces of evidence (interviews, articles, data) linked to workflows
+- **Schema**:
+  | Property | Type | Options |
+  |----------|------|---------|
+  | Name | title | — |
+  | Notes | rich_text | — |
+  | Direction | select | Supporting, Contradicting, Neutral |
+  | Strength | select | Anecdotal, Qualitative, Quantitative, Statistical |
+  | Source | url | — |
+  | Source Type | select | Interview, Survey, Article, Data, Observation, Expert Opinion |
+  | Date Collected | date | — |
+  | Collector | select | Shawn, Co-founder, Agent |
+  | Workflow | relation | → Workflows |
+  | Use Case | relation | → Use Cases |
+  | Market | relation | → Markets |
+  | Vertical | relation | → Verticals |
+  | + all shared assessment fields | | |
+- **Notes**: Not shown as a tree level — visible only in the workflow detail panel. Use /log-evidence to add entries.
