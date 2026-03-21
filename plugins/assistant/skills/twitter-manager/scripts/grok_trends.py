@@ -21,7 +21,7 @@ USER_PROMPT = """Search X right now and identify the top 10 trending topics in r
 For each topic, provide:
 - The topic name or hashtag
 - A brief summary of what people are discussing
-- 2-3 example tweets or paraphrased posts illustrating the conversation
+- 2-3 source tweets that best represent the conversation — include the tweet URL (https://x.com/<username>/status/<id>), the author's username, and the exact or near-exact tweet text
 - An engagement level: high, medium, or low
 
 Return your response as valid JSON only, with this exact structure:
@@ -30,7 +30,13 @@ Return your response as valid JSON only, with this exact structure:
     {
       "topic": "string",
       "summary": "string",
-      "example_tweets": ["string", "string"],
+      "source_tweets": [
+        {
+          "url": "https://x.com/username/status/tweet_id",
+          "author": "@username",
+          "text": "exact or near-exact tweet text"
+        }
+      ],
       "engagement_level": "high|medium|low"
     }
   ]
