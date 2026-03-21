@@ -26,11 +26,51 @@ For local development:
 /plugin install demerzel@manfred
 ```
 
+## Packages
+
+### `hyptree` — Hypothesis Tree Dashboard
+
+A Next.js web dashboard for visualizing and navigating the hypothesis tree stored in Notion.
+
+#### Prerequisites
+
+- Node.js 18+
+- A Notion integration with access to the hypothesis tree databases (created via `/seed-tree`)
+
+#### Setup
+
+```bash
+cd packages/hyptree
+npm install
+cp .env.local.example .env.local
+```
+
+Edit `.env.local` and fill in your values:
+
+```env
+NOTION_API_KEY=secret_...         # From https://www.notion.so/my-integrations
+NOTION_VERTICALS_DB_ID=           # Run /seed-tree to create these databases,
+NOTION_MARKETS_DB_ID=             #   then copy the IDs from Notion or from
+NOTION_USE_CASES_DB_ID=           #   .claude/memory/notion-databases.md
+NOTION_WORKFLOWS_DB_ID=
+NOTION_EVIDENCE_DB_ID=
+```
+
+#### Run
+
+```bash
+npm run dev      # http://localhost:3333
+npm run build    # production build
+npm run start    # serve production build on http://localhost:3333
+```
+
 ## Repository structure
 
 ```
 .claude-plugin/
   marketplace.json    # Plugin catalog
+packages/
+  hyptree/            # Hypothesis tree Next.js dashboard (port 3333)
 plugins/
   demerzel/           # Research & intelligence workflows
     .claude-plugin/
@@ -44,6 +84,9 @@ plugins/
     agents/           # architect, codex-dev, planner, reviewers, and more
     hooks/
     scripts/
+  assistant/          # Hypothesis tree research & scoring workflows
+    skills/           # seed-tree, research-hypothesis, score-hypothesis, log-evidence, review-tree
+    agents/           # hypothesis-researcher
 .claude/
   CLAUDE.md           # Project instructions
   memory/             # Persistent reference files (Notion database registry)
