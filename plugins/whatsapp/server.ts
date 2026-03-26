@@ -1,7 +1,7 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
+import { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestWaWebVersion } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 import P from 'pino'
 import fs from 'fs'
@@ -109,15 +109,21 @@ mcp.setRequestHandler(CallToolRequestSchema, async (req) => {
 
 async function connectWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState(authDir)
+  const { version } = await fetchLatestWaWebVersion()
 
-  sock = makeWASocket({ auth: state, printQRInTerminal: false, logger: P({ level: 'silent' }) })
+  sock = makeWASocket({ auth: state, version, logger: P({ level: 'silent' }) })
 
   sock.ev.on('creds.update', saveCreds)
 
   sock.ev.on('connection.update', (update) => {
     const { connection, lastDisconnect, qr } = update
     if (qr) {
-      process.stderr.write(`[whatsapp] Scan QR code to connect:\n${qr}\n`)
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      import('qrcode-terminal').then(({ default: qrcode }) => {
+        qrcode.generate(qr, { small: true }, (qrString: string) => {
+          process.stderr.write(`[whatsapp] Scan QR code to connect:\n${qrString}\n`)
+        })
+      })
     }
 
     if (connection === 'close') {
@@ -138,7 +144,8 @@ async function connectWhatsApp() {
       if (!msg.message) continue
 
       const jid = msg.key.remoteJid!
-      const sender = jid.replace('@s.whatsapp.net', '')
+      const rawSender = jid.replace('@s.whatsapp.net', '')
+      const sender = rawSender.startsWith('+') ? rawSender : `+${rawSender}`
       const text =
         msg.message.conversation ||
         msg.message.extendedTextMessage?.text ||

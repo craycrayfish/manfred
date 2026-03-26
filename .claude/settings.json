@@ -14,9 +14,10 @@
     "deny": []
   },
   "enabledPlugins": {
-    "Notion@claude-plugins-official": true,
     "hookify@claude-plugins-official": false,
+    "assistant@manfred": true,
     "dev@manfred": true,
-    "assistant@manfred": true
+    "whatsapp@manfred": true,
+    "telegram@claude-plugins-official": true
   }
 }
