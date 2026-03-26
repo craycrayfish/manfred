@@ -17,7 +17,6 @@
     "hookify@claude-plugins-official": false,
     "assistant@manfred": true,
     "dev@manfred": true,
-    "whatsapp@manfred": true,
-    "telegram@claude-plugins-official": true
+    "whatsapp@manfred": true
   }
 }
