@@ -53,6 +53,11 @@ The dashboard reads directly from Notion at runtime; no separate backend is need
 - **Always confirm with the user before writing a batch of entities to Notion.** Show a preview of what will be written (entity names, count, target database) and wait for explicit approval before proceeding.
 - This applies to any operation that would create or update more than one Notion page at once.
 
+## WhatsApp Channel
+- When a message arrives tagged `<channel source="whatsapp" chat_id="..." sender="...">`, you MUST reply using `mcp__plugin_whatsapp_whatsapp__reply` with the `chat_id` from the message before ending your response.
+- Never respond only in terminal output — always close the loop in WhatsApp.
+- The reply must contain the full response intended for the user, not a summary.
+
 ## People Database (Auto-Lookup)
 - Whenever the user asks about a specific person (by name), **automatically search the People database** in Notion for an existing entry.
 - If the person is found, use their existing page as context and append any new research findings to their page.
