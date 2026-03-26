@@ -1,12 +1,14 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import { makeWASocket, DisconnectReason, useMultiFileAuthState, fetchLatestWaWebVersion } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 import P from 'pino'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
+import { isAllowed } from './access.js'
+import { extractSender } from './sender.js'
+import { inboxWrite, sendNotification, drainInbox, startDrainLoop } from './inbox.js'
+import { createMcpServer } from './mcp.js'
 
 // State directory layout
 const stateDir = path.join(os.homedir(), '.claude', 'channels', 'whatsapp')
@@ -18,108 +20,13 @@ const inboxDir = path.join(stateDir, 'inbox')
 fs.mkdirSync(authDir, { recursive: true })
 fs.mkdirSync(inboxDir, { recursive: true })
 
-// Access config
-
-interface AccessConfig {
-  dmPolicy: 'allowlist' | 'open' | 'disabled'
-  allowFrom: string[]
-}
-
-const defaultAccessConfig: AccessConfig = { dmPolicy: 'allowlist', allowFrom: [] }
-
-function loadAccessConfig(): AccessConfig {
-  try {
-    const raw = fs.readFileSync(accessFile, 'utf-8')
-    return JSON.parse(raw) as AccessConfig
-  } catch {
-    return defaultAccessConfig
-  }
-}
-
-function isAllowed(phone: string): boolean {
-  const config = loadAccessConfig()
-  if (config.dmPolicy === 'disabled') return false
-  if (config.dmPolicy === 'open') return true
-  return config.allowFrom.includes(phone)
-}
-
-// MCP server
-
-const mcp = new Server(
-  { name: 'whatsapp', version: '0.0.1' },
-  {
-    capabilities: {
-      experimental: { 'claude/channel': {} },
-      tools: {},
-    },
-    instructions: `WhatsApp messages arrive as <channel source="whatsapp" chat_id="..." sender="...">message text</channel>.
-The chat_id is the WhatsApp JID (e.g. +1234567890@s.whatsapp.net). Reply using the reply tool with that chat_id.
-The sender field is the E.164 phone number. Only messages from allowed senders reach you.`,
-  },
-)
-
-mcp.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
-    {
-      name: 'reply',
-      description: 'Send a WhatsApp message back to a chat',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          chat_id: {
-            type: 'string',
-            description: 'WhatsApp JID (e.g. +1234567890@s.whatsapp.net)',
-          },
-          text: {
-            type: 'string',
-            description: 'Message text to send',
-          },
-        },
-        required: ['chat_id', 'text'],
-      },
-    },
-  ],
-}))
-
 // WhatsApp socket (assigned after connect)
 let sock: ReturnType<typeof makeWASocket> | null = null
 
-mcp.setRequestHandler(CallToolRequestSchema, async (req) => {
-  const { name, arguments: args } = req.params
-  if (name !== 'reply') {
-    return { content: [{ type: 'text', text: `Unknown tool: ${name}` }], isError: true }
-  }
-
-  const { chat_id, text } = args as { chat_id: string; text: string }
-
-  if (!sock) {
-    return { content: [{ type: 'text', text: 'WhatsApp socket not connected yet' }], isError: true }
-  }
-
-  try {
-    await sock.sendMessage(chat_id, { text })
-    return { content: [{ type: 'text', text: 'Message sent' }] }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    return { content: [{ type: 'text', text: `Failed to send message: ${message}` }], isError: true }
-  }
-})
-
-// Resolve a Baileys LID to an E.164 phone number by scanning auth lid-mapping-*.json files
-function resolveLid(lid: string): string | null {
-  try {
-    for (const file of fs.readdirSync(authDir)) {
-      const m = file.match(/^lid-mapping-(\d+)\.json$/)
-      if (!m) continue
-      const stored = JSON.parse(fs.readFileSync(path.join(authDir, file), 'utf-8'))
-      if (stored === lid) return `+${m[1]}`
-    }
-  } catch {}
-  return null
-}
+// MCP server
+const mcp = createMcpServer(() => sock)
 
 // Baileys connection
-
 async function connectWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState(authDir)
   const { version } = await fetchLatestWaWebVersion()
@@ -157,42 +64,27 @@ async function connectWhatsApp() {
       if (!msg.message) continue
 
       const jid = msg.key.remoteJid!
-      let sender: string
-      if (jid.endsWith('@s.whatsapp.net')) {
-        const raw = jid.replace('@s.whatsapp.net', '')
-        sender = raw.startsWith('+') ? raw : `+${raw}`
-      } else if (jid.endsWith('@lid')) {
-        // Resolve LID to phone number via baileys auth lid-mapping files
-        const lid = jid.replace('@lid', '')
-        const phone = resolveLid(lid)
-        sender = phone ?? `lid:${lid}`
-      } else {
-        sender = jid
-      }
+      const sender = extractSender(jid, authDir)
       const text =
         msg.message.conversation ||
         msg.message.extendedTextMessage?.text ||
         ''
 
       if (!text) continue
-      if (!isAllowed(sender)) continue
+      if (!isAllowed(sender, accessFile)) continue
 
-      try {
-        await mcp.notification({
-          method: 'notifications/claude/channel',
-          params: {
-            content: text,
-            meta: { chat_id: jid, sender },
-          },
-        })
-      } catch (err) {
-        process.stderr.write(`[whatsapp] Failed to send notification: ${err}\n`)
+      const entry = { content: text, meta: { chat_id: jid, sender } }
+      const inboxFile = inboxWrite(entry, inboxDir)
+      const ok = await sendNotification(mcp, entry, inboxFile)
+      if (!ok) {
+        process.stderr.write(`[whatsapp] Notification failed, queued to inbox\n`)
       }
     }
   })
 }
 
-// Start
-
-connectWhatsApp()
+// Start: await WhatsApp connection before MCP so listeners are registered first
+await connectWhatsApp()
 await mcp.connect(new StdioServerTransport())
+await drainInbox(inboxDir, mcp)
+startDrainLoop(inboxDir, mcp)
