@@ -105,6 +105,19 @@ mcp.setRequestHandler(CallToolRequestSchema, async (req) => {
   }
 })
 
+// Resolve a Baileys LID to an E.164 phone number by scanning auth lid-mapping-*.json files
+function resolveLid(lid: string): string | null {
+  try {
+    for (const file of fs.readdirSync(authDir)) {
+      const m = file.match(/^lid-mapping-(\d+)\.json$/)
+      if (!m) continue
+      const stored = JSON.parse(fs.readFileSync(path.join(authDir, file), 'utf-8'))
+      if (stored === lid) return `+${m[1]}`
+    }
+  } catch {}
+  return null
+}
+
 // Baileys connection
 
 async function connectWhatsApp() {
@@ -144,8 +157,18 @@ async function connectWhatsApp() {
       if (!msg.message) continue
 
       const jid = msg.key.remoteJid!
-      const rawSender = jid.replace('@s.whatsapp.net', '')
-      const sender = rawSender.startsWith('+') ? rawSender : `+${rawSender}`
+      let sender: string
+      if (jid.endsWith('@s.whatsapp.net')) {
+        const raw = jid.replace('@s.whatsapp.net', '')
+        sender = raw.startsWith('+') ? raw : `+${raw}`
+      } else if (jid.endsWith('@lid')) {
+        // Resolve LID to phone number via baileys auth lid-mapping files
+        const lid = jid.replace('@lid', '')
+        const phone = resolveLid(lid)
+        sender = phone ?? `lid:${lid}`
+      } else {
+        sender = jid
+      }
       const text =
         msg.message.conversation ||
         msg.message.extendedTextMessage?.text ||
