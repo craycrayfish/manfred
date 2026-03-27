@@ -15,10 +15,16 @@ Sequential agent workflow for complex tasks.
 
 Where `code-reviewer` is found, use the most appropriate agent such as `py-reviewer` depending on the coding language used.
 
+For any task that involves front-end code (React, HTML/CSS, TypeScript UI, component libraries, etc.), replace `codex-dev` with `gemini-dev` in the workflow below.
+
 ### feature
 Full feature implementation workflow:
 ```
 planner -> codex-dev -> code-reviewer -> security-reviewer
+```
+If front-end:
+```
+planner -> gemini-dev -> code-reviewer -> security-reviewer
 ```
 
 ### bugfix
@@ -26,11 +32,19 @@ Bug investigation and fix workflow:
 ```
 planner -> codex-dev -> code-reviewer
 ```
+If front-end:
+```
+planner -> gemini-dev -> code-reviewer
+```
 
 ### refactor
 Safe refactoring workflow:
 ```
 architect -> code-reviewer -> codex-dev
+```
+If front-end:
+```
+architect -> code-reviewer -> gemini-dev
 ```
 
 ## Execution Pattern
@@ -171,3 +185,4 @@ $ARGUMENTS:
 3. **Use security-reviewer** for auth/payment/PII
 4. **Keep handoffs concise** - focus on what next agent needs
 5. **Run verification** between agents if needed
+6. **Use gemini-dev for front-end** — any task touching React, HTML/CSS, or UI components should route through gemini-dev instead of codex-dev
