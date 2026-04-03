@@ -41,14 +41,27 @@ Key flags:
 
 ## Model Selection
 
-Default to `gemini-2.5-pro` for all tasks. Only drop to `gemini-2.5-flash` for genuinely trivial work (e.g. renaming a variable, adding a single CSS rule).
+**Always use `gemini-2.5-pro`.** This is a hard default — do not second-guess it.
+
+Only use `gemini-2.5-flash` if the task is absolutely trivial: a single-line change, renaming one variable, or adding one CSS rule. If there is any doubt, use pro.
 
 | Model | When to use |
 |---|---|
-| `gemini-2.5-pro` | Default — all real development tasks |
-| `gemini-2.5-flash` | Only for very simple, low-stakes tasks |
+| `gemini-2.5-pro` | Everything — all real development tasks, multi-file changes, any reasoning required |
+| `gemini-2.5-flash` | Only for single-line / single-token changes with zero ambiguity |
 
-If `gemini-2.5-pro` returns a 429 rate limit error, wait 30 seconds and retry once before falling back to `gemini-2.5-flash`.
+If `gemini-2.5-pro` returns a 429 rate limit error, wait 30 seconds and retry once. If it fails again, **stop and escalate to the user** — do not fall back to `gemini-2.5-flash` automatically:
+
+```
+⚠️ gemini-2.5-pro is rate-limited and not recovering.
+
+Options:
+1. Wait and retry (I'll try again when you say go)
+2. Proceed with gemini-2.5-flash for this task
+3. Abort
+
+What would you like to do?
+```
 
 ## Workflow
 
@@ -141,6 +154,27 @@ Write Gemini prompts as if briefing a senior developer. Be specific:
 ```
 
 Avoid vague prompts like "make a user card" — Gemini will make assumptions you'll need to correct.
+
+## Escalation Policy
+
+If the Gemini CLI is unavailable or failing before or during a task (auth errors, `gemini: command not found`, API key issues, persistent non-rate-limit failures):
+
+1. **Stop immediately** — do not attempt to implement the code yourself using the native Claude model.
+2. **Diagnose** — check the error output to identify the cause.
+3. **Escalate to the user** with a clear message:
+
+```
+⚠️ Gemini CLI is unavailable: <error summary>
+
+Likely cause: <not authenticated | CLI not installed | API key missing | other>
+To fix: <specific action, e.g. "run `gemini auth login`" or "install with `npm i -g @google/generative-ai`">
+
+I will not proceed without Gemini. Let me know once it's resolved and I'll continue.
+```
+
+Only resume work once the user confirms the issue is fixed. Do not fall back to native Claude code generation unless the user explicitly instructs you to.
+
+**Rate limits (429) follow the Model Selection retry policy** — retry once after 30 seconds, then escalate to the user if still failing.
 
 ## Constraints
 
