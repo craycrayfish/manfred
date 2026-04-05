@@ -7,7 +7,7 @@ import os from 'os'
 import path from 'path'
 import { isAllowed } from './access.js'
 import { extractSender } from './sender.js'
-import { inboxWrite, sendNotification, drainInbox, startDrainLoop } from './inbox.js'
+import { inboxWrite, drainInbox, startDrainLoop } from './inbox.js'
 import { createMcpServer } from './mcp.js'
 
 // State directory layout
@@ -20,11 +20,12 @@ const inboxDir = path.join(stateDir, 'inbox')
 fs.mkdirSync(authDir, { recursive: true })
 fs.mkdirSync(inboxDir, { recursive: true })
 
-// WhatsApp socket (assigned after connect)
+// WhatsApp socket and connection state
 let sock: ReturnType<typeof makeWASocket> | null = null
+let isConnected = false
 
 // MCP server
-const mcp = createMcpServer(() => sock)
+const mcp = createMcpServer(() => sock, () => isConnected)
 
 // Baileys connection
 async function connectWhatsApp() {
@@ -46,7 +47,14 @@ async function connectWhatsApp() {
       })
     }
 
+    if (connection === 'open') {
+      isConnected = true
+      process.stderr.write('[whatsapp] Connected\n')
+    }
+
     if (connection === 'close') {
+      isConnected = false
+      sock = null
       const reason = (lastDisconnect?.error as Boom)?.output?.statusCode
       if (reason === DisconnectReason.loggedOut) {
         process.stderr.write('[whatsapp] Logged out — run /whatsapp:configure qr to re-authenticate\n')
@@ -74,11 +82,7 @@ async function connectWhatsApp() {
       if (!isAllowed(sender, accessFile)) continue
 
       const entry = { content: text, meta: { chat_id: jid, sender } }
-      const inboxFile = inboxWrite(entry, inboxDir)
-      const ok = await sendNotification(mcp, entry, inboxFile)
-      if (!ok) {
-        process.stderr.write(`[whatsapp] Notification failed, queued to inbox\n`)
-      }
+      inboxWrite(entry, inboxDir)
     }
   })
 }

@@ -8,9 +8,10 @@ export interface WhatsAppSock {
 export async function handleReply(
   args: { chat_id: string; text: string },
   sock: WhatsAppSock | null,
+  isConnected: boolean,
 ): Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }> {
-  if (!sock) {
-    return { content: [{ type: 'text', text: 'WhatsApp socket not connected yet' }], isError: true }
+  if (!isConnected || !sock) {
+    return { content: [{ type: 'text', text: 'WhatsApp not connected — reconnecting, please retry shortly' }], isError: true }
   }
   try {
     await sock.sendMessage(args.chat_id, { text: args.text })
@@ -21,7 +22,7 @@ export async function handleReply(
   }
 }
 
-export function createMcpServer(getSock: () => WhatsAppSock | null): Server {
+export function createMcpServer(getSock: () => WhatsAppSock | null, getConnected: () => boolean): Server {
   const mcp = new Server(
     { name: 'whatsapp', version: '0.0.1' },
     {
@@ -63,7 +64,7 @@ The sender field is the E.164 phone number. Only messages from allowed senders r
     if (name !== 'reply') {
       return { content: [{ type: 'text', text: `Unknown tool: ${name}` }], isError: true }
     }
-    return handleReply(args as { chat_id: string; text: string }, getSock())
+    return handleReply(args as { chat_id: string; text: string }, getSock(), getConnected())
   })
 
   return mcp
