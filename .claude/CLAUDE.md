@@ -24,6 +24,10 @@ Requires a `.env.local` file (copy from `.env.local.example`) with:
 
 The dashboard reads directly from Notion at runtime; no separate backend is needed.
 
+## Plugin Versioning
+- **Bump the plugin version on every feature PR.** When a PR modifies files inside a `plugins/<name>/` directory, increment the patch version in that plugin's `.claude-plugin/plugin.json` before committing (e.g. `0.2.1` → `0.2.2`).
+- If the PR spans multiple plugins, bump each affected plugin independently.
+
 ## Claude Code Guidelines
 - Always run tests before committing: `uv run pytest`
 - **NEVER use backslash line continuations (`\`) in Bash commands.** Always write commands as a single line.
