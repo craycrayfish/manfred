@@ -24,7 +24,7 @@ planner -> codex-dev -> code-reviewer -> security-reviewer
 ```
 If front-end:
 ```
-planner -> gemini-dev -> code-reviewer -> security-reviewer
+planner -> gemini-dev -> agent-browser (if UI impact) -> code-reviewer -> security-reviewer
 ```
 
 ### bugfix
@@ -34,7 +34,7 @@ planner -> codex-dev -> code-reviewer
 ```
 If front-end:
 ```
-planner -> gemini-dev -> code-reviewer
+planner -> gemini-dev -> agent-browser (if UI impact) -> code-reviewer
 ```
 
 ### refactor
@@ -44,8 +44,21 @@ architect -> code-reviewer -> codex-dev
 ```
 If front-end:
 ```
-architect -> code-reviewer -> gemini-dev
+architect -> code-reviewer -> gemini-dev -> agent-browser (if UI impact)
 ```
+
+### Front-End Integration Check (agent-browser)
+
+After `gemini-dev` completes, assess whether the changes have any UI impact (new components, modified layouts, changed interactions, visual changes). If yes, run an integration check using the `agent-browser` agent before proceeding to code review.
+
+The `agent-browser` agent should:
+1. Confirm the dev server is running (or start it if not)
+2. Navigate to the affected pages/components
+3. Exercise the changed functionality (clicks, inputs, navigation)
+4. Check for console errors, broken layouts, or unexpected behaviour
+5. Produce a handoff with pass/fail status and any issues found
+
+If `agent-browser` finds issues, hand back to `gemini-dev` for fixes before continuing the chain. Skip the integration check only if the changes are purely non-visual (e.g. refactoring internal logic with no rendered output).
 
 ## Execution Pattern
 
@@ -139,6 +152,10 @@ TEST RESULTS
 ------------
 [Test pass/fail summary]
 
+INTEGRATION CHECK
+-----------------
+[PASS / FAIL / SKIPPED (non-visual change) — browser test findings]
+
 SECURITY STATUS
 ---------------
 [Security findings]
@@ -186,3 +203,4 @@ $ARGUMENTS:
 4. **Keep handoffs concise** - focus on what next agent needs
 5. **Run verification** between agents if needed
 6. **Use gemini-dev for front-end** — any task touching React, HTML/CSS, or UI components should route through gemini-dev instead of codex-dev
+7. **Run agent-browser after gemini-dev** — always do an integration check if the change has any rendered UI impact; skip only for purely internal refactors
