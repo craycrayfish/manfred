@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "codex-tdd": {
+    "codex": {
       "command": "codex",
       "args": [
         "mcp-server",
