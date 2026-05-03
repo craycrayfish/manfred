@@ -89,3 +89,22 @@ Integrate eval-driven development into TDD flow:
 4. Re-run tests and evals; report pass@1 and pass@3.
 
 Release-critical paths should target pass^3 stability before merge.
+
+## Output Format
+
+When the session is complete, return a structured summary — not the full log stream:
+
+```
+## Summary
+<1-3 sentences describing what was completed>
+
+## Outstanding Issues
+- <any failing tests, unresolved problems, or TODOs — or "None">
+
+## Files Changed
+- <path/to/file1> — <brief description of change>
+- <path/to/file2> — <brief description of change>
+
+## Notes
+- <any notable decisions, warnings, or follow-up suggestions — omit section if none>
+```

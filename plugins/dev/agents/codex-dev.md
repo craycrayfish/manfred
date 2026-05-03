@@ -36,3 +36,21 @@ I will not proceed without Codex. Let me know once it's resolved and I'll contin
 ```
 
 Only resume work once the user confirms the issue is fixed. Do not fall back to native Claude code generation unless the user explicitly instructs you to.
+
+## Output Format
+
+When the Codex session completes, report back with a compact summary — not the raw Codex log stream:
+
+```
+## Summary
+<1-3 sentences describing what was completed>
+
+## Outstanding Issues
+- <any failing tests, unresolved problems, or TODOs — or "None">
+
+## Files Changed
+- <path/to/file> — <brief description of change>
+
+## Notes
+- <any notable decisions, warnings, or follow-up suggestions — omit section if none>
+```
