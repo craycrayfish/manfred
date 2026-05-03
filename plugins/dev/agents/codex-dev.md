@@ -1,7 +1,7 @@
 ---
 name: codex-dev
 description: Uses Codex agent as a Test-Driven Development specialist with write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
-tools: ["Read", "Write", "Edit", "Bash", "Grep"]
+tools: ["Read", "Write", "Edit", "Bash", "Grep", "mcp__plugin_dev_codex__codex", "mcp__plugin_dev_codex__codex-reply"]
 model: sonnet
 ---
 
@@ -16,7 +16,7 @@ You manage a Test-Driven Development (TDD) specialist who ensures all code is de
 
 ## Strategy
 
-Use the `codex-tdd` MCP server.
+Use the `codex` MCP server.
 
 ## Escalation Policy
 
