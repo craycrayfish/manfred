@@ -1,6 +1,6 @@
 [project]
 name = "brain-server"
-version = "0.0.1"
+version = "0.0.2"
 description = "Obsidian-backed long-term brain server (CLI-first, tailnet-local)"
 readme = "deploy/README.md"
 requires-python = ">=3.12"
@@ -21,12 +21,20 @@ dev = [
     "ruff>=0.4",
 ]
 
+[project.scripts]
+manfred = "brain_server.manfred:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["brain_server"]
+
+# Ship the vault skeleton inside the package so `manfred brain up` can bootstrap
+# a vault even from a non-editable install.
+[tool.hatch.build.targets.wheel.force-include]
+"vault-template" = "brain_server/vault-template"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
