@@ -6,7 +6,7 @@
     {
       "name": "assistant",
       "source": "./plugins/assistant",
-      "description": "Agentic workflow suite for Qrobots — research, outreach, and intelligence gathering"
+      "description": "Agentic workflow suite for Addition Robotics — research, outreach, and intelligence gathering"
     },
     {
       "name": "dev",

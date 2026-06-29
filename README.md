@@ -1,6 +1,6 @@
 # manfred
 
-A Claude Code plugin monorepo containing agentic workflow plugins for Qrobots.
+A Claude Code plugin monorepo containing agentic workflow plugins for Addition Robotics.
 
 ## Plugins
 

@@ -164,8 +164,8 @@ Read `/tmp/grok-trends.json`. If the file contains an error object, report it to
 
 For each trending topic in `trending_topics`, generate:
 
-1. **2 tweet ideas** — each under 280 characters, punchy and relevant to Qrobots. Follow the voice guidelines below.
-2. **1 article or blog post title** — a clear, compelling headline that ties the trend to Qrobots' mission.
+1. **2 tweet ideas** — each under 280 characters, punchy and relevant to Addition Robotics. Follow the voice guidelines below.
+2. **1 article or blog post title** — a clear, compelling headline that ties the trend to Addition Robotics' mission.
 
 ### Step 5 — Present suggestions
 

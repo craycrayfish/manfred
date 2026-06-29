@@ -1,7 +1,7 @@
 {
   "name": "manfred",
   "version": "0.1.2",
-  "description": "Agentic workflow suite for Qrobots — research, outreach, and intelligence gathering",
+  "description": "Agentic workflow suite for Addition Robotics — research, outreach, and intelligence gathering",
   "private": true,
   "engines": { "node": ">=20" }
 }
