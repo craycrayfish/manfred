@@ -76,7 +76,12 @@ Types of gap-filling questions:
 
 ### Phase 5: Formatting for Platform
 - Ask the user which platforms they are planning to publish in
-- Create appropriately formatted content based on 
+- **Before formatting, read the relevant styleguide files** and apply them ruthlessly. The styleguide wins over anything in the Platform Considerations section below:
+  - Always: `plugins/assistant/skills/writing-styleguide/styleguide/general.md`
+  - For X Articles / long-form: `plugins/assistant/skills/writing-styleguide/styleguide/x-articles.md`
+  - For LinkedIn: `plugins/assistant/skills/writing-styleguide/styleguide/linkedin.md`
+- Create appropriately formatted content based on the styleguide and platform conventions
+- For **X Articles** specifically: plain markdown with minimal styling (X strips most formatting), no em dashes, concrete and specific titles, first line grounds the reader in a scene/number/claim, no clickbait or throat-clearing openings
 
 ## Notion Integration
 
