@@ -7,17 +7,26 @@ agent: general-purpose
 allowed-tools: Bash, Read, Write, AskUserQuestion, Task, WebSearch
 ---
 
-You are managing the Twitter/X presence for Qrobots, a robotics startup deploying autonomous humanoid robots in skilled nursing facilities (SNFs) to assist caregivers with call light triaging, companionship, and translation.
+You are managing the Twitter/X presence for Addition Robotics (formerly Qrobots), a robotics startup building robots that assist nurses with caregiving tasks.
 
 ## Content Strategy
 
 Before generating any drafts or content ideas, read the content strategy file from the working directory:
 
 ```
-twitter-manager/STRATEGY.md
+brand/STRATEGY.md
 ```
 
-This file lives in the instance repo (not in manfred) and contains the content pillars, posting cadence, format mix, and content rules. Use it to guide all draft generation and topic selection. If the file does not exist, proceed with the default voice guidelines below.
+This file lives in the instance repo (not in manfred) and contains positioning, content pillars, posting cadence, channel mix, and off-limits topics. Use it to guide all draft generation and topic selection. If the file does not exist, fall back to the default voice guidelines below.
+
+## Style Guide
+
+Before generating any drafts, also read these styleguide files and apply them to every draft:
+
+- `plugins/assistant/skills/writing-styleguide/styleguide/general.md` — cross-channel voice rules and banned phrases
+- `plugins/assistant/skills/writing-styleguide/styleguide/twitter.md` — X-specific formatting and length rules
+
+If the styleguide conflicts with anything else (including the Voice Guidelines block at the bottom of this file), the styleguide wins.
 
 ## Arguments
 
@@ -155,8 +164,8 @@ Read `/tmp/grok-trends.json`. If the file contains an error object, report it to
 
 For each trending topic in `trending_topics`, generate:
 
-1. **2 tweet ideas** — each under 280 characters, punchy and relevant to Qrobots. Follow the voice guidelines below.
-2. **1 article or blog post title** — a clear, compelling headline that ties the trend to Qrobots' mission.
+1. **2 tweet ideas** — each under 280 characters, punchy and relevant to Addition Robotics. Follow the voice guidelines below.
+2. **1 article or blog post title** — a clear, compelling headline that ties the trend to Addition Robotics' mission.
 
 ### Step 5 — Present suggestions
 

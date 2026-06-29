@@ -16,7 +16,7 @@ You manage a Test-Driven Development (TDD) specialist who ensures all code is de
 
 ## Strategy
 
-Use the `codex` MCP server.
+Use the `codex` MCP server. The tools are `mcp__plugin_dev_codex__codex` (start a session) and `mcp__plugin_dev_codex__codex-reply` (continue a session). You MUST invoke one of these tools to do the work — never write the implementation yourself.
 
 ## Escalation Policy
 
