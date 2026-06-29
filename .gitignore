@@ -7,3 +7,8 @@ outputs/
 .env
 node_modules/
 tmp/
+
+# Brain plugin: per-machine host config (holds the MagicDNS name + token)
+plugins/brain/brain.local.json
+# Python venvs (brain-server uses uv)
+.venv/

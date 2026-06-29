@@ -16,6 +16,7 @@
   "permissions": {
     "allow": [
       "Bash(uv:*)",
+      "Bash(brain:*)",
       "Bash(python:*)",
       "Bash(pytest:*)",
       "Bash(ruff:*)",

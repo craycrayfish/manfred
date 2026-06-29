@@ -1,0 +1,32 @@
+[project]
+name = "brain-server"
+version = "0.0.1"
+description = "Obsidian-backed long-term brain server (CLI-first, tailnet-local)"
+readme = "deploy/README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+    "python-frontmatter>=1.1",
+    "watchfiles>=0.21",
+    "pydantic>=2.6",
+    "ulid-py>=1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27",
+    "ruff>=0.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["brain_server"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

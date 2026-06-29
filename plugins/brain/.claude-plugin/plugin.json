@@ -1,0 +1,11 @@
+{
+  "name": "brain",
+  "description": "Obsidian-backed long-term memory: capture, recall, and weekly review across devices",
+  "version": "0.0.1",
+  "author": {
+    "name": "Shawn Tan"
+  },
+  "homepage": "https://github.com/craycrayfish/manfred",
+  "license": "MIT",
+  "keywords": ["claude-code", "memory", "obsidian"]
+}
