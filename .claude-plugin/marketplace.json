@@ -17,6 +17,11 @@
       "name": "whatsapp",
       "source": "./plugins/whatsapp",
       "description": "WhatsApp channel for Claude Code — two-way messaging bridge"
+    },
+    {
+      "name": "brain",
+      "source": "./plugins/brain",
+      "description": "Obsidian-backed long-term memory: capture, recall, and weekly review across devices"
     }
   ]
 }

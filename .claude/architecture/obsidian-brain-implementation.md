@@ -362,11 +362,21 @@ Host is the mini, SSH alias `jarvis` (`HostName m4-mini`, `User jarvis`,
   Phase 1 since `move_tier` made them cheap; the **review skill** is still Phase 3.
 
 ### Phase 2 — Claude Code wiring (M)
-- [ ] `plugins/brain/.claude-plugin/plugin.json` (v0.0.1).
-- [ ] `hooks/hooks.json`; `scripts/recall_inject.py`; `scripts/capture.py` + extractor.
-- [ ] `skills/brain-save`, `skills/brain-recall`.
-- [ ] Settings: `Bash(brain:*)` allow + `BRAIN_URL`/`BRAIN_TOKEN` env wiring.
+- [x] `plugins/brain/.claude-plugin/plugin.json` (v0.0.2); registered in
+      `.claude-plugin/marketplace.json` + enabled in `.claude/settings.json`.
+- [x] `hooks/hooks.json` (UserPromptSubmit recall-inject + async SessionEnd capture);
+      `scripts/config.py` (host resolution + CLI locator); `scripts/recall_inject.py`
+      (gated heuristic §4.1.1, never errors the turn); `scripts/capture.py` +
+      headless Sonnet extractor (meaningful-session gate, dedupe, brain write).
+- [x] `skills/brain-save` (on-demand capture, confirm-before-write),
+      `skills/brain-recall` (explicit search).
+- [x] Settings: `Bash(brain:*)` + `Skill(brain:*)` allow.
+- [x] TDD: `test_plugin_config`, `test_recall_inject`, `test_capture` (41 tests,
+      Red→Green); full suite 93 green, ruff clean.
 - [ ] Deploy to Mac mini (launchd); verify cross-device `brain health` + recall-inject.
+- _Note:_ recall-inject and capture **shell out to `bin/brain`** (which self-resolves
+  the host), so `config.py` is mainly the CLI locator; env wiring is the CLI's job.
+  Mac-mini deploy is the only open item — needs the running server + token (Phase 5).
 
 ### Phase 3 — Weekly review (M)
 - [ ] Routes `/review/queue|promote|merge|discard`; repo tier-move + `review` field.
