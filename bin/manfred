@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+#
+# manfred — repo-level CLI.
+#
+#   manfred brain up        # start the brain server (background)
+#   manfred brain up -f     # ...in the foreground (Ctrl-C to stop)
+#   manfred brain down      # stop it
+#   manfred brain restart   # down + up
+#   manfred brain status    # is it running? + a /healthz probe
+#   manfred brain logs       # tail the server logs (Ctrl-C to stop)
+#
+# Config is read from the environment, optionally seeded by a gitignored
+# packages/brain-server/.brain.env (copy from .brain.env.example). Sensible
+# defaults: vault at ~/brain-vault (auto-created from the template), loopback
+# bind on :8765, no token (dev mode = auth disabled, loopback only).
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SERVER_DIR="$REPO_ROOT/packages/brain-server"
+ENV_FILE="$SERVER_DIR/.brain.env"
+
+# Per-machine runtime state (logs + pidfile).
+BRAIN_STATE="${BRAIN_STATE:-$HOME/.brain}"
+PIDFILE="$BRAIN_STATE/server.pid"
+LOG_DIR="$BRAIN_STATE/log"
+OUT_LOG="$LOG_DIR/brain.out.log"
+ERR_LOG="$LOG_DIR/brain.err.log"
+
+# Optional env file (vault/token/host/port overrides), gitignored.
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+fi
+
+# Defaults — match brain_server.config.load_config().
+: "${BRAIN_VAULT:=$HOME/brain-vault}"
+: "${BRAIN_HOST:=127.0.0.1}"
+: "${BRAIN_PORT:=8765}"
+: "${BRAIN_TOKEN:=}"
+
+die() { echo "manfred: $*" >&2; exit 1; }
+
+running_pid() {
+  # Echo the live server pid (and return 0) if one is running, else return 1.
+  if [ -f "$PIDFILE" ]; then
+    local pid
+    pid="$(cat "$PIDFILE" 2>/dev/null || true)"
+    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+      echo "$pid"
+      return 0
+    fi
+  fi
+  return 1
+}
+
+healthz() {
+  curl -fsS -m 2 "http://${BRAIN_HOST}:${BRAIN_PORT}/healthz" 2>/dev/null
+}
+
+ensure_vault() {
+  if [ ! -d "$BRAIN_VAULT" ]; then
+    echo "manfred: creating vault at $BRAIN_VAULT (from template)"
+    cp -R "$SERVER_DIR/vault-template" "$BRAIN_VAULT"
+  fi
+}
+
+server_env() {
+  # Export the resolved config for the server process.
+  export BRAIN_VAULT BRAIN_HOST BRAIN_PORT
+  export BRAIN_DB="${BRAIN_DB:-$BRAIN_VAULT/.brain/index.db}"
+  if [ -n "$BRAIN_TOKEN" ]; then export BRAIN_TOKEN; fi
+}
+
+brain_up() {
+  local foreground=0
+  if [ "${1:-}" = "-f" ] || [ "${1:-}" = "--foreground" ]; then foreground=1; fi
+
+  if running_pid >/dev/null; then
+    echo "manfred: brain already running (pid $(running_pid)) on ${BRAIN_HOST}:${BRAIN_PORT}"
+    return 0
+  fi
+
+  ensure_vault
+  server_env
+  mkdir -p "$LOG_DIR"
+  [ -n "$BRAIN_TOKEN" ] || echo "manfred: no BRAIN_TOKEN set — running in dev mode (auth disabled, loopback only)"
+
+  if [ "$foreground" = "1" ]; then
+    echo "manfred: starting brain (foreground) on ${BRAIN_HOST}:${BRAIN_PORT} — Ctrl-C to stop"
+    exec uv run --project "$SERVER_DIR" python -m brain_server
+  fi
+
+  echo "manfred: starting brain on ${BRAIN_HOST}:${BRAIN_PORT} ..."
+  nohup uv run --project "$SERVER_DIR" python -m brain_server >"$OUT_LOG" 2>"$ERR_LOG" &
+  echo $! >"$PIDFILE"
+
+  # Wait for it to answer /healthz (uv may sync deps on first run).
+  for _ in $(seq 1 60); do
+    if healthz >/dev/null; then
+      echo "manfred: brain up (pid $(cat "$PIDFILE")) — http://${BRAIN_HOST}:${BRAIN_PORT}"
+      echo "manfred: logs at $ERR_LOG"
+      return 0
+    fi
+    if ! running_pid >/dev/null; then
+      echo "manfred: server exited during startup — last log lines:" >&2
+      tail -n 20 "$ERR_LOG" >&2 || true
+      rm -f "$PIDFILE"
+      return 1
+    fi
+    sleep 0.5
+  done
+  die "brain did not become healthy within 30s — see $ERR_LOG"
+}
+
+brain_down() {
+  local pid stopped=0
+  if pid="$(running_pid)"; then
+    kill "$pid" 2>/dev/null || true
+    stopped=1
+  fi
+  # Reap the actual server child (uv run spawns python -m brain_server).
+  pkill -f "python -m brain_server" 2>/dev/null && stopped=1 || true
+  rm -f "$PIDFILE"
+  # Wait out uvicorn's graceful shutdown so status is honest immediately after.
+  for _ in $(seq 1 20); do
+    healthz >/dev/null || break
+    sleep 0.25
+  done
+  if [ "$stopped" = "1" ]; then
+    echo "manfred: brain stopped"
+  else
+    echo "manfred: brain was not running"
+  fi
+}
+
+brain_status() {
+  if running_pid >/dev/null; then
+    echo "status:  running (pid $(running_pid))"
+  else
+    echo "status:  stopped"
+  fi
+  echo "url:     http://${BRAIN_HOST}:${BRAIN_PORT}"
+  echo "vault:   $BRAIN_VAULT"
+  echo "auth:    $([ -n "$BRAIN_TOKEN" ] && echo enabled || echo 'dev mode (disabled)')"
+  local h
+  if h="$(healthz)"; then
+    echo "healthz: $h"
+  else
+    echo "healthz: unreachable"
+  fi
+}
+
+brain_logs() {
+  [ -f "$ERR_LOG" ] || die "no logs yet at $ERR_LOG — start the server first"
+  exec tail -n 50 -f "$ERR_LOG" "$OUT_LOG"
+}
+
+brain() {
+  local sub="${1:-}"
+  shift || true
+  case "$sub" in
+    up)      brain_up "$@" ;;
+    down|stop) brain_down ;;
+    restart) brain_down; brain_up "$@" ;;
+    status)  brain_status ;;
+    logs)    brain_logs ;;
+    ""|help|-h|--help)
+      grep '^#' "${BASH_SOURCE[0]}" | grep -v '^#!' | sed 's/^# \{0,1\}//' | head -n 16 ;;
+    *) die "unknown 'brain' subcommand: $sub (try: up, down, restart, status, logs)" ;;
+  esac
+}
+
+main() {
+  local group="${1:-}"
+  shift || true
+  case "$group" in
+    brain) brain "$@" ;;
+    ""|help|-h|--help)
+      echo "manfred — repo CLI"
+      echo "usage: manfred brain {up|down|restart|status|logs}" ;;
+    *) die "unknown command: $group (only 'brain' is available)" ;;
+  esac
+}
+
+main "$@"
