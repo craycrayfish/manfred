@@ -143,14 +143,14 @@ class TestCmdPost:
         mock_client = MagicMock()
         mock_client.create_tweet.return_value = mock_response
 
-        args = argparse.Namespace(text="Hello from Qrobots!")
+        args = argparse.Namespace(text="Hello from Addition Robotics!")
         with patch.object(twitter, "get_post_client", return_value=mock_client):
             twitter.cmd_post(args)
 
         captured = capsys.readouterr()
         output = json.loads(captured.out)
-        assert output == {"id": "12345", "text": "Hello from Qrobots!"}
-        mock_client.create_tweet.assert_called_once_with(text="Hello from Qrobots!")
+        assert output == {"id": "12345", "text": "Hello from Addition Robotics!"}
+        mock_client.create_tweet.assert_called_once_with(text="Hello from Addition Robotics!")
 
     def test_post_empty_text(self, monkeypatch, capsys):
         self._set_post_env(monkeypatch)
