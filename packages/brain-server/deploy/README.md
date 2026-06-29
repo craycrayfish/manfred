@@ -63,9 +63,10 @@ plugins/brain/bin/brain health
 ## Operations
 
 - **Logs:** `~/.brain/log/brain.out.log`, `~/.brain/log/brain.err.log`.
-- **Rebuild the index** (DB is disposable): `brain` has no rebuild route yet in
-  the MVP — delete `~/brain-vault/.brain/index.db` and restart; the server
-  rebuilds from the vault on boot.
+- **Rebuild the index** (DB is disposable): run `brain rebuild` (→ `POST
+  /admin/rebuild`) to drop and repopulate from the vault without a restart. The
+  server also rebuilds on boot, so deleting `~/brain-vault/.brain/index.db` and
+  restarting works too.
 - **Backups:** daily `git -C ~/brain-vault add -A && git commit` (cron); the
   index needs no backup.
 - **Bind safety:** the listener must stay on the tailnet/loopback. WireGuard

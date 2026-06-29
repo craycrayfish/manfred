@@ -262,6 +262,14 @@ def cmd_health(args, base, token):
     _emit(res, args.json, lambda r: print(f"ok notes={r.get('notes')} version={r.get('version')}"))
 
 
+def cmd_rebuild(args, base, token):
+    try:
+        res = _request("POST", base + "/admin/rebuild", token)
+    except Offline:
+        raise SystemExit("brain: offline")
+    _emit(res, args.json, lambda r: print(f"rebuilt index: {r.get('notes')} notes"))
+
+
 def cmd_flush(args, base, token):
     try:
         sent = _drain_outbox(base, token)
@@ -348,6 +356,10 @@ def build_parser() -> argparse.ArgumentParser:
     h = sub.add_parser("health")
     add_json(h)
     h.set_defaults(func=cmd_health)
+
+    rb = sub.add_parser("rebuild")
+    add_json(rb)
+    rb.set_defaults(func=cmd_rebuild)
 
     fl = sub.add_parser("flush")
     add_json(fl)

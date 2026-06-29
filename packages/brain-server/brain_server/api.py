@@ -100,6 +100,8 @@ class BrainStore:
             return self._move(op["id"], "archived", review="discarded", status="archived")
         if kind == "merge":
             return self._merge(op["ids"], op["into"])
+        if kind == "rebuild":
+            return {"ok": True, "notes": self.index.rebuild(self.cfg.vault)}
         raise ValueError(f"unknown op {kind}")
 
     def _create(self, req: WriteRequest) -> dict:
@@ -229,9 +231,6 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     app = FastAPI(title="brain-server", version=__version__, lifespan=lifespan)
     auth = Depends(_make_auth(cfg))
 
-    def store(app_=app) -> BrainStore:
-        return app_.state.store
-
     @app.get("/healthz")
     async def healthz():
         s: BrainStore = app.state.store
@@ -289,5 +288,9 @@ def create_app(cfg: Config | None = None) -> FastAPI:
     @app.get("/stats", dependencies=[auth])
     async def stats():
         return app.state.store.index.stats()
+
+    @app.post("/admin/rebuild", dependencies=[auth])
+    async def rebuild():
+        return await app.state.store.submit({"kind": "rebuild"})
 
     return app

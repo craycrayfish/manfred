@@ -12,3 +12,6 @@ tmp/
 plugins/brain/brain.local.json
 # Python venvs (brain-server uses uv)
 .venv/
+# coverage artifacts
+.coverage
+htmlcov/
