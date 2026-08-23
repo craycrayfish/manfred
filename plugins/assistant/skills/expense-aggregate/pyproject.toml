@@ -1,0 +1,11 @@
+[project]
+name = "expense-manager"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pypdf>=5.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["scripts/tests"]
+pythonpath = ["scripts", "../expense-setup/scripts"]
