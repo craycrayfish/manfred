@@ -31,6 +31,34 @@ def test_extract_amazon(monkeypatch, tmp_path):
     assert "114-2938471-9384756" in row["description"]
 
 
+ORDER_SUMMARY_TEXT = """
+Order Summary
+Order placed April 21, 2026  Order # 114-6341501-8223413
+Amazon Visa ending in 1551
+Item(s) Subtotal: $10.99
+Rewards Points: -$12.06
+Grand Total: $0.00
+Refund Total $10.85
+Your package was left near the front door or porch.
+2 HiLetgo BTS7960 43A High Power Motor Driver Module
+for Arduino
+Sold by: HiLetgo
+Return complete
+"""
+
+
+def test_extract_amazon_order_summary_layout(monkeypatch, tmp_path):
+    pdf = tmp_path / "o.pdf"
+    pdf.write_text("stub")
+    monkeypatch.setattr(expenses, "pdf_text", lambda p: ORDER_SUMMARY_TEXT)
+    row = expenses.extract_amazon(pdf)
+    assert row["date"] == "2026-04-21" and row["amount"] == "0.00"  # clamped, not -10.85
+    assert row["confidence"] == "medium" and "[refunded -10.85]" in row["description"]
+    assert row["payment_method"] == "Visa 1551"
+    assert row["description"].startswith("HiLetgo BTS7960 43A High Power Motor Driver Module for Arduino")
+    assert "#114-6341501-8223413" in row["description"] and "rewards points -12.06" in row["description"]
+
+
 def test_extract_amazon_unparseable_is_low_confidence(monkeypatch, tmp_path):
     pdf = tmp_path / "junk.pdf"
     pdf.write_text("stub")

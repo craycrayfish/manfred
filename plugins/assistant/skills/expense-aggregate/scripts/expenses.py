@@ -33,6 +33,7 @@ LEDGER = ".expense-ledger.json"
 CSV_NAME = "expenses.csv"
 
 MONEY = r"[\$£€]?\s*([\d,]+\.\d{2})"
+STATUS_LINE = re.compile(r"^(Your package|Package was|It was handed|Delivered|Arriving|Picked up|Return|FSA or HSA|Shipped|Out for delivery|Not yet shipped|Refund|\$[\d.,]+$)", re.I)
 AMOUNT_OK = re.compile(r"\d+(\.\d{1,2})?")  # bare number; "" allowed for unreadable receipts
 
 
@@ -66,19 +67,44 @@ def extract_amazon(path: Path) -> dict:
     if m:
         row["date"] = parse_date(m.group(1))
 
-    m = re.search(r"order number\s*:?\s*([\d-]{15,25})", text, re.I)
-    if m:
-        row["description"] = f"Amazon order {m.group(1)}"
+    m = re.search(r"Order\s*(?:#|number)\s*:?\s*([\d-]{15,25})", text, re.I)
+    order = m.group(1) if m else ""
+
+    # First item title sits between the totals block and the first "Sold by:",
+    # after zero or more delivery-status lines.
+    m = re.search(r"Grand Total:[^\n]*\n(.+?)\nSold by:", text, re.S)
+    lines = [ln for ln in (m.group(1).split("\n") if m else []) if not STATUS_LINE.match(ln)]
+    item = re.sub(r"^\d{1,2} (?=[A-Z])", "", " ".join(lines)).strip()[:80]
+    n_items = len(re.findall(r"^Sold by:", text, re.M))
+    desc = item or f"Amazon order {order}"
+    if n_items > 1:
+        desc += f" (+{n_items - 1} more)"
+    if order and item:
+        desc += f" #{order}"
 
     m = re.search(rf"(?:Grand Total|Order Total)\s*:?\s*{MONEY}", text, re.I)
     if m:
         row["amount"] = m.group(1).replace(",", "")
+    # Amazon prints "Refund Total $X" once any item in the order is refunded; charge = total - refund.
+    m = re.search(rf"Refund Total\s*:?\s*{MONEY}", text, re.I)
+    if m and row["amount"]:
+        refund = float(m.group(1).replace(",", ""))
+        row["amount"] = f"{max(0.0, float(row['amount']) - refund):.2f}"
+        desc += f" [refunded -{refund:.2f}]"
+    returns = re.findall(r"^(Return started|Return complete|Refund issued|Cancelled)$", text, re.M | re.I)
+    if returns:
+        desc += " [" + ", ".join(r.lower() for r in returns) + "]"
+        row["confidence"] = "medium"
+    credits = re.findall(rf"(Rewards Points|Gift Card Amount|Promotion Applied)\s*:?\s*-{MONEY}", text, re.I)
+    if credits:
+        desc += " [" + ", ".join(f"{k.lower()} -{v}" for k, v in credits) + "]"
+    row["description"] = desc
     if "£" in text:
         row["currency"] = "GBP"
     elif "€" in text:
         row["currency"] = "EUR"
 
-    m = re.search(r"(Visa|Mastercard|American Express|Amex|Discover)\s*\**\s*(\d{4})", text, re.I)
+    m = re.search(r"(Visa|Mastercard|American Express|Amex|Discover)[^\d\n]{0,20}(\d{4})", text, re.I)
     if m:
         row["payment_method"] = f"{m.group(1)} {m.group(2)}"
 
