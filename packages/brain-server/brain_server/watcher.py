@@ -28,7 +28,11 @@ def reconcile_change(index: Index, change: Change, raw: str) -> None:
     note_id = path.stem
     try:
         if change == Change.deleted:
-            index.remove(note_id)
+            # A tier move deletes the old-tier file after writing the new one;
+            # only drop the note when the index still points at the deleted path.
+            meta = index.get_meta(note_id)
+            if meta is not None and meta["path"] == str(path):
+                index.remove(note_id)
         elif path.exists():
             index.upsert(read_note(path), str(path))
     except Exception:  # noqa: BLE001 - never let one bad file kill the watcher

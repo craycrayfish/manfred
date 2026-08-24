@@ -181,17 +181,6 @@ class Index:
             self._conn.execute("DELETE FROM edges WHERE src_id=? OR dst_id=?", (note_id, note_id))
             self._conn.commit()
 
-    def set_fields(self, note_id: str, **fields) -> None:
-        """Patch arbitrary scalar columns on a note row (tier, status, review...)."""
-        if not fields:
-            return
-        cols = ", ".join(f"{k}=?" for k in fields)
-        with self._lock:
-            self._conn.execute(
-                f"UPDATE notes SET {cols} WHERE id=?", (*fields.values(), note_id)
-            )
-            self._conn.commit()
-
     # ---- read path --------------------------------------------------------
 
     def bump_access(self, note_id: str) -> None:
@@ -301,11 +290,6 @@ class Index:
             }
             total = self._conn.execute("SELECT COUNT(*) c FROM notes").fetchone()["c"]
         return {"total": total, "by_tier": by_tier, "by_type": by_type}
-
-    def all_paths(self) -> dict[str, str]:
-        with self._lock:
-            rows = self._conn.execute("SELECT id, path, content_hash FROM notes").fetchall()
-        return {r["id"]: r["content_hash"] for r in rows}
 
     # ---- rebuild ----------------------------------------------------------
 

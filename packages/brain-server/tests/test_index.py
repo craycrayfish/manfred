@@ -72,7 +72,8 @@ def test_recall_handles_special_chars(index, vault):
 
 def test_recall_tier_filter(index, vault):
     n = _note(index, vault, "Inbox pref", "tierfilter target")
-    index.set_fields(n.frontmatter.id, tier="longterm")
+    n.frontmatter.tier = "longterm"
+    index.upsert(n, str(write_note(vault, n)))
     assert index.recall("tierfilter", tier="inbox") == []
     assert n.frontmatter.id in [h["id"] for h in index.recall("tierfilter", tier="longterm")]
 
@@ -115,15 +116,6 @@ def test_remove_clears_all_tables(index, vault):
     assert index.get_meta(n.frontmatter.id) is None
     assert index.recall("zzz") == []
     assert index.neighbors(n.frontmatter.id)["edges"] == []
-
-
-def test_set_fields_patches_columns(index, vault):
-    n = _note(index, vault, "Patch", "body")
-    index.set_fields(n.frontmatter.id, tier="longterm", review="elevated")
-    row = index.get_meta(n.frontmatter.id)
-    assert row["tier"] == "longterm"
-    assert row["review"] == "elevated"
-    index.set_fields(n.frontmatter.id)  # no-op, must not raise
 
 
 def test_upsert_updates_fts(index, vault):

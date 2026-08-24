@@ -1,7 +1,7 @@
 {
   "name": "brain",
   "description": "Obsidian-backed long-term memory: capture, recall, and weekly review across devices",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": {
     "name": "Shawn Tan"
   },

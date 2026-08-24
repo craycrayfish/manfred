@@ -6,7 +6,7 @@ Flow (must stay fast and never error the turn):
   2. **Gate locally** (no network, no LLM) — only proceed when the prompt looks
      memory-relevant. Most prompts gate out in microseconds and print `{}`.
   3. When gated in, run `brain recall "<prompt>" --k 5 --json` and emit
-     `{"additionalSystemPrompt": "..."}` with the hits.
+     `hookSpecificOutput.additionalContext` with the hits.
   4. On empty / offline / timeout / any error -> print `{}`.
 
 Output contract: a single JSON object on stdout. `{}` means "no injection".
@@ -65,7 +65,8 @@ def is_memory_relevant(prompt: str) -> bool:
 def recall(query: str) -> list[dict]:
     """Call the bundled CLI; return hits (empty on offline/timeout)."""
     cmd = [sys.executable, str(brain_cli()), "recall", query, "--k", "5", "--json"]
-    out = subprocess.run(cmd, capture_output=True, text=True, timeout=4)
+    # 3s < the hook's 4s timeout, so a slow server still lets us print {}.
+    out = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
     if out.returncode != 0 or not out.stdout.strip():
         return []
     return json.loads(out.stdout).get("hits", [])
@@ -88,7 +89,12 @@ def build_injection(hits: list[dict]) -> dict:
         + "\n".join(lines)
         + f"\n(ids: {', '.join(ids)})"
     )
-    return {"additionalSystemPrompt": text}
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "UserPromptSubmit",
+            "additionalContext": text,
+        }
+    }
 
 
 def main(stdin_text: str | None = None) -> None:

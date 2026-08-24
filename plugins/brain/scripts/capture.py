@@ -16,6 +16,7 @@ so capture stays conservative but doesn't have to be perfect.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -135,7 +136,8 @@ def _strip_fence(s: str) -> str:
 
 
 def run_extractor(transcript_text: str) -> list[dict]:
-    cmd = ["claude", "-p", "--model", "claude-sonnet-4-6",
+    model = os.environ.get("BRAIN_EXTRACTOR_MODEL", "claude-sonnet-4-6")
+    cmd = ["claude", "-p", "--model", model,
            "--output-format", "json", EXTRACTION_PROMPT]
     out = subprocess.run(cmd, input=transcript_text, capture_output=True,
                          text=True, timeout=120)

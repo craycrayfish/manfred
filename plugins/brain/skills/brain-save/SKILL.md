@@ -6,7 +6,8 @@ allowed-tools: Bash(brain:*), AskUserQuestion
 ---
 
 You are capturing durable long-term memory from the current session into the
-brain server via the `brain` CLI. The SessionEnd hook does this automatically at
+brain server via the `brain` CLI (if `brain` is not on PATH, use
+`plugins/brain/bin/brain` from the manfred repo). The SessionEnd hook does this automatically at
 session end; this skill is the on-demand version, run against the conversation
 so far.
 

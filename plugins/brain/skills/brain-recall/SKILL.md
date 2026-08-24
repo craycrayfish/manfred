@@ -5,7 +5,8 @@ argument-hint: <query> [type] — e.g. "python tooling preferences"
 allowed-tools: Bash(brain:*)
 ---
 
-You are searching the brain's long-term memory via the `brain` CLI. The
+You are searching the brain's long-term memory via the `brain` CLI (if `brain`
+is not on PATH, use `plugins/brain/bin/brain` from the manfred repo). The
 UserPromptSubmit hook injects memory automatically on memory-relevant prompts;
 this skill is the explicit, on-demand search.
 

@@ -22,7 +22,7 @@
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/capture.py\"",
             "async": true,
-            "timeout": 30
+            "timeout": 180
           }
         ],
         "description": "Distill the session into durable memory and brain-write candidates to inbox"

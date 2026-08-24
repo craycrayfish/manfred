@@ -192,3 +192,23 @@ def test_rebuild_command_e2e(server, tmp_path):
     out = run_cli(["rebuild", "--json"], server, home)
     assert out.returncode == 0, out.stderr
     assert json.loads(out.stdout)["ok"] is True
+
+
+def test_outbox_drain_drops_rejected_items(cli_mod, monkeypatch, tmp_path, capsys):
+    # A server-rejected (HTTP error) item must be dropped, not kill the drain
+    # or block the queue forever.
+    outbox = tmp_path / "outbox.ndjson"
+    monkeypatch.setattr(cli_mod, "OUTBOX", outbox)
+    for i in range(3):
+        cli_mod._enqueue("/notes", {"title": f"n{i}", "type": "fact", "body": ""})
+
+    def fake_request(method, url, token, payload=None, timeout=5):
+        if payload["title"] == "n1":  # poisoned item -> server 422
+            raise SystemExit("brain: HTTP 422: bad payload")
+        return {}
+
+    monkeypatch.setattr(cli_mod, "_request", fake_request)
+    sent = cli_mod._drain_outbox("http://x", "t")
+    assert sent == 2  # n0 and n2 went; n1 dropped
+    assert not outbox.exists()  # nothing left queued
+    assert "dropping rejected outbox item" in capsys.readouterr().err

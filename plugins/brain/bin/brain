@@ -94,6 +94,10 @@ def _drain_outbox(base: str, token: str) -> int:
             sent += 1
         except Offline:
             remaining.append(ln)
+        except SystemExit as e:
+            # Server rejected the item (HTTP error). Drop it — a poisoned line
+            # must never block the queue or kill the command mid-drain.
+            print(f"brain: dropping rejected outbox item: {e}", file=sys.stderr)
         except (json.JSONDecodeError, KeyError):
             continue  # drop malformed lines
     if remaining:

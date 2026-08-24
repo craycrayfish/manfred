@@ -54,10 +54,11 @@ Set `plugins/brain/brain.local.json` (gitignored) to:
 { "url": "http://m4-mini:8765", "token": "<same token>" }
 ```
 
-then:
+then put the CLI on PATH (the brain skills invoke it as `brain`) and verify:
 
 ```bash
-plugins/brain/bin/brain health
+ln -sf "$(pwd)/plugins/brain/bin/brain" ~/.local/bin/brain
+brain health
 ```
 
 ## Operations

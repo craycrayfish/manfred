@@ -49,3 +49,18 @@ def test_reconcile_swallows_malformed_note(index, vault):
     bad.write_text("---\nnot: valid frontmatter for our schema\n---\nbody")
     reconcile_change(index, Change.added, str(bad))  # must not raise
     assert index.stats()["total"] == 0
+
+
+def test_reconcile_deleted_stale_path_keeps_moved_note(index, vault):
+    # A tier move writes the new-tier file then deletes the old one; the
+    # delete event for the stale path must not drop the note from the index.
+    note = _make_note(body="promoted zzz")
+    old_path = write_note(vault, note)
+    reconcile_change(index, Change.added, str(old_path))
+    note.frontmatter.tier = "longterm"
+    new_path = write_note(vault, note)
+    index.upsert(note, str(new_path))
+    old_path.unlink()
+    reconcile_change(index, Change.deleted, str(old_path))
+    assert index.get_meta(note.frontmatter.id) is not None
+    assert index.recall("zzz")

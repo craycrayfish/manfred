@@ -59,24 +59,6 @@ class LinkRequest(BaseModel):
     rel: str = "relates_to"
 
 
-class RecallHit(BaseModel):
-    id: str
-    title: str
-    type: str
-    tier: str
-    snippet: str
-    score: float
-
-
-class ReviewItem(BaseModel):
-    id: str
-    title: str
-    type: str
-    confidence: Optional[float] = None
-    created: str
-    snippet: str
-
-
 class PromoteRequest(BaseModel):
     id: str
 

@@ -2,7 +2,7 @@
 
 The UserPromptSubmit hook: a cheap local gate decides whether the prompt is
 memory-relevant; only then does it call `brain recall` and inject hits as an
-additionalSystemPrompt. It must never raise (a hook error would break the turn)
+hookSpecificOutput.additionalContext. It must never raise (a hook error would break the turn)
 and must skip the network entirely when gated out.
 """
 
@@ -65,7 +65,9 @@ def test_build_injection_includes_titles_and_ids(mod):
         {"id": "01A", "type": "preference", "title": "Prefers uv", "snippet": "uses uv"},
         {"id": "01B", "type": "fact", "title": "Mac mini host", "snippet": ""},
     ])
-    asp = inj["additionalSystemPrompt"]
+    hso = inj["hookSpecificOutput"]
+    assert hso["hookEventName"] == "UserPromptSubmit"
+    asp = hso["additionalContext"]
     assert "Prefers uv" in asp
     assert "Mac mini host" in asp
     assert "01A" in asp and "01B" in asp
@@ -87,7 +89,7 @@ def test_main_injects_when_relevant(mod, monkeypatch, capsys):
                         lambda q: [{"id": "01A", "type": "fact", "title": "T", "snippet": "S"}])
     mod.main(stdin_text=json.dumps({"prompt": "what did I decide about deployment?"}))
     out = json.loads(capsys.readouterr().out)
-    assert "T" in out["additionalSystemPrompt"]
+    assert "T" in out["hookSpecificOutput"]["additionalContext"]
 
 
 def test_main_emits_empty_on_no_hits(mod, monkeypatch, capsys):
