@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.manfred.brain</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/uv</string>
+    <string>run</string>
+    <string>python</string>
+    <string>-m</string>
+    <string>brain_server</string>
+  </array>
+
+  <!-- Absolute path to packages/brain-server on the mini -->
+  <key>WorkingDirectory</key>
+  <string>/Users/jarvis/git/craycrayfish/manfred/packages/brain-server</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>BRAIN_VAULT</key>
+    <string>/Users/jarvis/brain-vault</string>
+    <key>BRAIN_DB</key>
+    <string>/Users/jarvis/brain-vault/.brain/index.db</string>
+    <key>BRAIN_TOKEN</key>
+    <string>REPLACE_WITH_TOKEN</string>
+    <!-- tailnet IP, or 127.0.0.1 for loopback-only. Never 0.0.0.0. -->
+    <key>BRAIN_HOST</key>
+    <string>127.0.0.1</string>
+    <key>BRAIN_PORT</key>
+    <string>8765</string>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/Users/jarvis/.brain/log/brain.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/jarvis/.brain/log/brain.err.log</string>
+</dict>
+</plist>

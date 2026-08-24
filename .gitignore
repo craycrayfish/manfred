@@ -7,3 +7,13 @@ outputs/
 .env
 node_modules/
 tmp/
+
+# Brain plugin: per-machine host config (holds the MagicDNS name + token)
+plugins/brain/brain.local.json
+# Brain server: per-machine env for `manfred brain up` (may hold the token)
+packages/brain-server/.brain.env
+# Python venvs (brain-server uses uv)
+.venv/
+# coverage artifacts
+.coverage
+htmlcov/

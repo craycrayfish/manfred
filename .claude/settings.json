@@ -16,6 +16,7 @@
   "permissions": {
     "allow": [
       "Bash(uv:*)",
+      "Bash(brain:*)",
       "Bash(python:*)",
       "Bash(pytest:*)",
       "Bash(ruff:*)",
@@ -27,7 +28,8 @@
       "mcp__plugin_assistant_notion__*",
       "mcp__plugin_dev_codex-tdd__*",
       "Skill(assistant:*)",
-      "Skill(dev:*)"
+      "Skill(dev:*)",
+      "Skill(brain:*)"
     ],
     "deny": []
   },
@@ -35,6 +37,7 @@
     "hookify@claude-plugins-official": false,
     "assistant@manfred": true,
     "dev@manfred": true,
-    "whatsapp@manfred": true
+    "whatsapp@manfred": true,
+    "brain@manfred": true
   }
 }
