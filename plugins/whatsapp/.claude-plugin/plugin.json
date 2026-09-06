@@ -1,6 +1,0 @@
-{
-  "name": "whatsapp",
-  "description": "WhatsApp channel for Claude Code — two-way messaging bridge",
-  "version": "0.0.1",
-  "keywords": ["whatsapp", "messaging", "channel", "mcp"]
-}

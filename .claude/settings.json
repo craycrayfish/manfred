@@ -1,18 +1,4 @@
 {
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 -c \"import sys,json; d=json.load(sys.stdin); p=d.get('prompt',''); r={'additionalSystemPrompt': 'MANDATORY: This prompt was sent via WhatsApp. You MUST end your turn by calling mcp__plugin_whatsapp_whatsapp__reply with the chat_id extracted from the <channel> tag. Do not stop without sending the reply.' if '<channel source=\\\"whatsapp\\\"' in p else ''}; print(json.dumps(r))\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(uv:*)",
@@ -34,7 +20,6 @@
   "enabledPlugins": {
     "hookify@claude-plugins-official": false,
     "assistant@manfred": true,
-    "dev@manfred": true,
-    "whatsapp@manfred": true
+    "dev@manfred": true
   }
 }
